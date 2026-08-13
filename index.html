@@ -2469,7 +2469,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 mb-1">Aspek</label>
-                                <select id="sikap-aspek" class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none bg-white">
+                                <select id="sikap-aspek" onchange="refreshOpsiButirSikap()" class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none bg-white">
                                     <option value="Spiritual">Spiritual</option>
                                     <option value="Sosial">Sosial</option>
                                 </select>
@@ -2482,11 +2482,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 mb-1">Butir Sikap / Perilaku yang Diamati</label>
-                                <textarea id="sikap-perilaku" rows="2" placeholder="Contoh: Khusyuk memimpin doa / membantu teman yang kesulitan / menunjukkan sikap jujur..." class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none"></textarea>
+                                <select id="sikap-perilaku-pilih" onchange="pilihIsianSikap('sikap-perilaku-pilih','sikap-perilaku')" class="w-full text-xs border rounded p-1.5 mb-1 bg-amber-50 text-gray-700 focus:ring-1 focus:outline-none" title="Pilih butir sikap yang relevan — otomatis terisi ke kotak di bawah dan masih bisa diedit manual">
+                                    <option value="">⬇ Pilih butir sikap…</option>
+                                </select>
+                                <textarea id="sikap-perilaku" rows="2" placeholder="Ketik manual, atau pilih dari daftar di atas..." class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none"></textarea>
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 mb-1">Tindak Lanjut</label>
-                                <textarea id="sikap-tindak" rows="2" placeholder="Contoh: Penguatan positif / pembinaan / koordinasi dengan wali kelas..." class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none"></textarea>
+                                <select id="sikap-tindak-pilih" onchange="pilihIsianSikap('sikap-tindak-pilih','sikap-tindak')" class="w-full text-xs border rounded p-1.5 mb-1 bg-amber-50 text-gray-700 focus:ring-1 focus:outline-none" title="Pilih tindak lanjut — otomatis terisi ke kotak di bawah dan masih bisa diedit manual">
+                                    <option value="">⬇ Pilih tindak lanjut…</option>
+                                </select>
+                                <textarea id="sikap-tindak" rows="2" placeholder="Ketik manual, atau pilih dari daftar di atas..." class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none"></textarea>
                             </div>
                         </div>
                         <div class="flex justify-end gap-2">
@@ -4315,6 +4321,9 @@
                     identitas.kelas = allowedKelas[0];
                     changed = true;
                 }
+                // AUTO-FILTER LENGKAP: tapel / semester / nama guru / kelas / mapel terisi
+                // otomatis dari penugasan — guru langsung melihat datanya tanpa atur & simpan manual.
+                try { if (typeof ensureIdentitasDefaults === 'function' && ensureIdentitasDefaults()) changed = true; } catch (e) {}
                 if (changed) {
                     saveDataLocally();
                 }
@@ -5217,17 +5226,27 @@
 
 
         function applyGuruAccessFilter(list) {
-            // Filter umum untuk semua data berdasarkan penugasan guru
+            // Filter umum untuk semua data berdasarkan penugasan guru (AUTO — tanpa atur manual)
             const sess = (typeof getSession === 'function') ? getSession() : null;
             if (!sess || sess.role === 'admin') return list;
             const assigns = (typeof getGuruAssignments === 'function') ? getGuruAssignments() : [];
-            if (!assigns || !assigns.length) return []; // guru tanpa penugasan = tidak lihat apa2
-            // Jika ada mapel/kelas di data, cek kecocokan
+            const nm = (sess.name || sess.user || '').trim().toLowerCase();
+            if (!assigns || !assigns.length) {
+                // Belum ada penugasan resmi: auto-filter berdasar NAMA GURU pada datanya.
+                // Data tanpa penanda guru (= data pribadi akun ini: silabus, jurnal, dll.) tetap tampil.
+                return list.filter(it => {
+                    const g = (it.guru || it.guruNama || '').trim().toLowerCase();
+                    return (!g || !nm) ? true : (g === nm);
+                });
+            }
+            // Dengan penugasan: data milik guru ini (nama cocok) ATAU sesuai pasangan mapel/kelas penugasan.
             return list.filter(item => {
-                // item bisa punya mapel dan kelas
+                const g = (item.guru || item.guruNama || '').trim().toLowerCase();
+                if (nm && g && g === nm) return true;           // eksplisit milik guru ini
                 const m = item.mapel || item.mata_pelajaran || null;
-                const k = item.kelas || null;
-                if (!m && !k) return true; // data tanpa mapel/kelas (mis jadwal umum) tetap tampil? kita anggap true untuk safe
+                const rawK = item.kelas;
+                const k = (rawK && String(rawK).trim() !== '-') ? rawK : null; // 'Upacara'/baris umum (kelas '-'/kosong) tetap tampil utk semua
+                if (!m && !k) return true;
                 if (m && k) return isMapelKelasAllowed(m, k);
                 if (m) return isMapelAllowed(m);
                 if (k) return isKelasAllowed(k);
@@ -23773,7 +23792,42 @@
             if (typeof afterLocalSave === 'function') afterLocalSave();
         }
 
-        function loadData() {
+        // Isi default identitas HANYA untuk kolom yang kosong (tidak menimpa pilihan pengguna).
+        // tapel diturunkan dari data kaldik bila ada, lalu fallback daftar tapel master.
+        function ensureIdentitasDefaults() {
+            let chg = false;
+            if (!identitas.tapel) {
+                let t = '';
+                try {
+                    const yrs = new Set();
+                    Object.keys(dataKaldik || {}).forEach(k => {
+                        const m = /^(\d{4})-(\d{2})/.exec(k);
+                        if (m) { const y = +m[1], mo = +m[2]; yrs.add(mo >= 7 ? (y + '/' + (y + 1)) : ((y - 1) + '/' + y)); }
+                    });
+                    if (yrs.size) t = Array.from(yrs).sort().pop();
+                } catch (e) {}
+                if (!t && (masterData.tapel || []).length) t = masterData.tapel[masterData.tapel.length - 1];
+                if (t) { identitas.tapel = t; chg = true; }
+            }
+            if (!identitas.semester) { identitas.semester = 'Ganjil'; chg = true; }
+            const sess = (typeof getSession === 'function') ? getSession() : null;
+            if (sess && sess.role !== 'admin') {
+                if (!identitas.guru && sess.name) { identitas.guru = sess.name; chg = true; }
+                if (!identitas.kelas) { const al = getAllowedKelasList(); if (al.length) { identitas.kelas = al[0]; chg = true; } }
+                if (!identitas.mapel) { const am = getAllowedMapelList(); if (am.length) { identitas.mapel = am[0]; chg = true; } }
+            }
+            if (chg) {
+                // Tulis langsung ke localStorage TANPA memicu push (sinkron menyusul lewat penyimpanan biasa)
+                try {
+                    const cur = JSON.parse(localStorage.getItem('perangkatAjarData') || '{}');
+                    cur.identitas = identitas;
+                    localStorage.setItem('perangkatAjarData', JSON.stringify(cur));
+                } catch (e) {}
+            }
+            return chg;
+        }
+
+                function loadData() {
             const saved = localStorage.getItem('perangkatAjarData');
             if (saved) {
                 const parsed = JSON.parse(saved);
@@ -23825,6 +23879,7 @@
             renderIdentitasForm();
             initMasterTabs();
             updatePrintData();
+                    try { ensureIdentitasDefaults(); } catch (e) { console.warn('ensureIdentitasDefaults:', e); }
         }
 
         // ============================================================================
@@ -23918,7 +23973,8 @@
                     kaldik: dataKaldik,
                     kaldikTypes: kaldikTypes,
                     liburMingguan: liburMingguan,
-                    kaldikShowKeteranganTgl: kaldikShowKeteranganTgl
+                    kaldikShowKeteranganTgl: kaldikShowKeteranganTgl,
+                    jadwal: dataJadwal             // jadwal = data sekolah (dikelola admin), tampil untuk semua guru
                 };
             }
             return {
@@ -23932,8 +23988,8 @@
                 kktp: dataKktp,
                 jurnal: dataJurnal,
                 sikap: dataSikap,
-                absensi: dataAbsensi,
-                jadwal: dataJadwal
+                absensi: dataAbsensi
+                // jadwal dipindah ke scope 'shared' (FIX: guru tidak bisa melihat jadwal)
             };
         }
 
@@ -23956,7 +24012,9 @@
             syncState.suppressPush++;
             try {
                 const cur = JSON.parse(localStorage.getItem('perangkatAjarData') || '{}');
-                const merged = Object.assign({}, cur, payload); // payload sifatnya mengganti per-scope
+                const payloadBersih = Object.assign({}, payload);
+                if (kind === 'me') delete payloadBersih.jadwal; // jadwal kini milik scope 'shared'
+                const merged = Object.assign({}, cur, payloadBersih); // payload sifatnya mengganti per-scope
                 localStorage.setItem('perangkatAjarData', JSON.stringify(merged));
                 loadData();
                 try { renderDashboard(); } catch (e) {}
@@ -26806,6 +26864,72 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // ===== Daftar isian cepat Jurnal Sikap =====
+        const SIKAP_BUTIR = {
+            'Spiritual': [
+                'Berdoa sebelum dan sesudah pembelajaran dengan khusyuk',
+                'Menjalankan ibadah tepat waktu tanpa diingatkan',
+                'Bersyukur atas karunia Tuhan dalam keseharian',
+                'Khidmat mengikuti kegiatan keagamaan di sekolah',
+                'Toleran terhadap ibadah/keyakinan teman yang berbeda',
+                'Mengucapkan salam dan berperilaku santun',
+                'Tertib dan tenang saat kegiatan doa bersama',
+                'Menunjukkan ketakwaan dalam perbuatan sehari-hari'
+            ],
+            'Sosial': [
+                'Jujur dalam perkataan dan perbuatan',
+                'Disiplin menaati tata tertib kelas/sekolah',
+                'Bertanggung jawab menyelesaikan tugas yang diberikan',
+                'Peduli dan membantu teman yang kesulitan',
+                'Gotong royong dalam kegiatan kelas',
+                'Santun dan menghormati guru serta teman',
+                'Percaya diri menyampaikan pendapat',
+                'Aktif bekerja sama dalam kelompok',
+                'Menghargai pendapat dan karya orang lain',
+                'Menjaga kebersihan dan kerapian lingkungan kelas'
+            ]
+        };
+        const SIKAP_TINDAK = [
+            'Apresiasi dan pujian di depan kelas',
+            'Penguatan positif secara personal',
+            'Dijadikan teladan bagi teman-teman',
+            'Pembinaan/bimbingan secara personal',
+            'Koordinasi dengan wali kelas',
+            'Koordinasi dengan guru BK',
+            'Pemberitahuan kepada orang tua/wali',
+            'Pemantauan berkelanjutan',
+            'Pemberian tanggung jawab tambahan',
+            'Belum perlu tindak lanjut khusus'
+        ];
+
+        // Bangun ulang opsi "Butir Sikap" mengikuti aspek yang dipilih (Spiritual/Sosial)
+        function refreshOpsiButirSikap() {
+            const aspekEl = document.getElementById('sikap-aspek');
+            const sel = document.getElementById('sikap-perilaku-pilih');
+            if (!sel) return;
+            const aspek = aspekEl ? aspekEl.value : 'Spiritual';
+            const list = SIKAP_BUTIR[aspek] || [];
+            sel.innerHTML = '<option value="">⬇ Pilih butir sikap (aspek ' + aspek + ')…</option>' +
+                list.map(b => '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>').join('');
+        }
+
+        function refreshOpsiTindakSikap() {
+            const sel = document.getElementById('sikap-tindak-pilih');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">⬇ Pilih tindak lanjut…</option>' +
+                SIKAP_TINDAK.map(b => '<option value="' + escapeHtml(b) + '">' + escapeHtml(b) + '</option>').join('');
+        }
+
+        // Pilihan dropdown -> masuk ke textarea (ditambahkan di belakang bila sudah ada isi; masih bisa diedit)
+        function pilihIsianSikap(selId, taId) {
+            const sel = document.getElementById(selId);
+            const ta = document.getElementById(taId);
+            if (!sel || !ta || !sel.value) return;
+            const cur = ta.value.trim();
+            ta.value = cur ? (cur + '; ' + sel.value) : sel.value;
+            sel.value = '';
+        }
+
         function renderJurnalSikap() {
             const tbody = document.getElementById('table-sikap-body');
             if (!tbody) return;
@@ -26851,7 +26975,11 @@
                 };
             }
 
-            // 3. Tabel data
+            // 3. Segarkan dropdown isian cepat (butir sikap mengikuti aspek terpilih)
+            refreshOpsiButirSikap();
+            refreshOpsiTindakSikap();
+
+            // 4. Tabel data
             tbody.innerHTML = '';
             let filtered = dataSikap.filter(d =>
                 (d.tapel === identitas.tapel) &&
@@ -26953,6 +27081,7 @@
 
             document.getElementById('sikap-date').value = item.date;
             document.getElementById('sikap-aspek').value = item.aspek || 'Spiritual';
+            refreshOpsiButirSikap();
             document.getElementById('sikap-perilaku').value = item.perilaku || '';
             document.getElementById('sikap-tindak').value = item.tindak || '';
 
