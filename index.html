@@ -315,6 +315,12 @@
         .jdw-slot .tm { color: #9ca3af; font-size: 9.5px; display: block; }
         .jdw-slot .act { display: none; margin-top: 3px; }
         .jdw-slot:hover .act { display: block; }
+        /* ===== MODE TEMPEL (SALIN/CLONE SEL JADWAL) ===== */
+        body.jdw-paste-mode .jdw-cell, body.jdw-paste-mode .jdw-cell-fill { cursor: copy !important; outline: 2px dashed #818cf8; outline-offset: -2px; border-radius: 6px; }
+        body.jdw-paste-mode .jdw-empty { color: #6366f1 !important; }
+        body.jdw-paste-mode .jdw-slot { cursor: copy !important; }
+        #jdw-paste-bar { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 1300; background: #312e81; color: #fff; padding: 9px 14px; border-radius: 999px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.35); display: flex; align-items: center; gap: 10px; max-width: 94vw; flex-wrap: wrap; }
+        #jdw-paste-bar button { background: #fff; color: #312e81; border: none; border-radius: 999px; padding: 3px 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
         /* ===== WARNA PER MAPEL (JADWAL MATRIKS) ===== */
         .jdw-mp-0{background:#eff6ff;border-left-color:#3b82f6}.jdw-mp-0 .mp{color:#1d4ed8}
         .jdw-mp-1{background:#fef3c7;border-left-color:#f59e0b}.jdw-mp-1 .mp{color:#b45309}
@@ -2411,7 +2417,7 @@
 
         <!-- Jurnal Section -->
         <section id="jurnal" class="space-y-6 hide">
-            <div class="flex flex-col md:flex-row justify-between items-center no-print gap-4">
+            <div id="jurnal-head-mengajar" class="flex flex-col md:flex-row justify-between items-center no-print gap-4">
                 <h2 class="text-2xl font-bold text-gray-800">Jurnal Mengajar Harian</h2>
                 <div class="flex items-center gap-2">
                     <select id="jurnal-filter-mapel" onchange="renderJurnal()" class="border rounded-lg px-3 py-2 text-sm bg-white shadow-sm" title="Filter Mapel">
@@ -2420,14 +2426,158 @@
                     <select id="jurnal-filter-kelas" onchange="renderJurnal()" class="border rounded-lg px-3 py-2 text-sm bg-white shadow-sm" title="Filter Kelas">
                         <!-- JS Rendered -->
                     </select>
+                    <button onclick="toggleJurnalMode()" class="bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition-colors text-sm font-medium" title="Jurnal Perkembangan Sikap Spiritual dan Sosial">
+                        <i class="fas fa-heart mr-2"></i> Jurnal Sikap
+                    </button>
                     <button onclick="printArea('print-jurnal')" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
                         <i class="fas fa-print mr-2"></i> Cetak Jurnal
                     </button>
                 </div>
             </div>
 
+            <!-- ===== MODE: JURNAL PERKEMBANGAN SIKAP SPIRITUAL & SOSIAL ===== -->
+            <div id="jurnal-sikap-wrap" class="space-y-6 hide">
+                <div class="flex flex-col md:flex-row justify-between items-center no-print gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Jurnal Perkembangan Sikap Spiritual &amp; Sosial</h2>
+                    <div class="flex items-center gap-2">
+                        <select id="sikap-filter-kelas" onchange="renderJurnalSikap()" class="border rounded-lg px-3 py-2 text-sm bg-white shadow-sm" title="Filter Kelas">
+                            <!-- JS Rendered -->
+                        </select>
+                        <button onclick="printArea('print-jurnal-sikap')" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
+                            <i class="fas fa-print mr-2"></i> Cetak Jurnal Sikap
+                        </button>
+                        <button onclick="toggleJurnalMode()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium" title="Kembali ke Jurnal Mengajar Harian">
+                            <i class="fas fa-arrow-left mr-2"></i> Jurnal Mengajar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Input Form Sikap -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 no-print">
+                    <h3 id="sikap-form-title" class="font-bold text-gray-800 mb-4 border-b pb-2">Input Catatan Perkembangan Sikap</h3>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Hari / Tanggal</label>
+                                <input type="date" id="sikap-date" class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Nama Siswa</label>
+                                <select id="sikap-siswa" class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none bg-white">
+                                    <option value="">-- Pilih Siswa --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Aspek</label>
+                                <select id="sikap-aspek" class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none bg-white">
+                                    <option value="Spiritual">Spiritual</option>
+                                    <option value="Sosial">Sosial</option>
+                                </select>
+                            </div>
+                            <div class="text-[11px] text-gray-500 bg-amber-50 border border-amber-200 rounded-lg p-2">
+                                <i class="fas fa-info-circle text-amber-500 mr-1"></i>
+                                Catatan tersimpan untuk <b>Kelas <span id="sikap-kelas-info">...</span></b>, sesuai Tahun Pelajaran &amp; Semester di Identitas.
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Butir Sikap / Perilaku yang Diamati</label>
+                                <textarea id="sikap-perilaku" rows="2" placeholder="Contoh: Khusyuk memimpin doa / membantu teman yang kesulitan / menunjukkan sikap jujur..." class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Tindak Lanjut</label>
+                                <textarea id="sikap-tindak" rows="2" placeholder="Contoh: Penguatan positif / pembinaan / koordinasi dengan wali kelas..." class="w-full text-sm border rounded p-2 focus:ring-1 focus:outline-none"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button type="button" id="btn-cancel-sikap" onclick="cancelEditJurnalSikap()" class="hidden bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 font-bold text-sm transition-all">
+                                Batal
+                            </button>
+                            <button type="button" id="btn-save-sikap" onclick="addJurnalSikap()" class="bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 font-bold text-sm shadow-sm transition-all">
+                                <i class="fas fa-save mr-2"></i> Simpan Catatan Sikap
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Print Area Sikap -->
+                <div id="print-jurnal-sikap" class="bg-white p-8 rounded-xl shadow-sm border border-gray-100 content-card">
+                    <div class="hidden print-area mb-6">
+                        <div class="text-center border-b-2 border-black pb-4 mb-4">
+                            <h3 class="text-2xl font-bold uppercase">JURNAL PERKEMBANGAN SIKAP SPIRITUAL DAN SOSIAL</h3>
+                            <p class="font-bold text-lg uppercase mt-1 print-sekolah">NAMA SEKOLAH</p>
+                        </div>
+                        <table class="w-full text-sm font-medium no-border-table mb-4">
+                            <tr>
+                                <td style="width: 150px; border: none !important;">Kelas</td>
+                                <td style="width: 10px; border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-kelas-sikap">...</td>
+                                <td style="width: 150px; border: none !important;">Semester</td>
+                                <td style="width: 10px; border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-semester">...</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none !important;">Tahun Pelajaran</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-tapel">...</td>
+                                <td style="border: none !important;">Wali Kelas / Guru</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-guru">...</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none !important;">NIP</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-nip">...</td>
+                                <td style="border: none !important;"></td>
+                                <td style="border: none !important;"></td>
+                                <td style="border: none !important;"></td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse border border-gray-400">
+                            <thead class="bg-gray-100 text-center font-bold">
+                                <tr>
+                                    <th class="border border-gray-400 p-2 w-10">No</th>
+                                    <th class="border border-gray-400 p-2 w-28">Hari / Tgl</th>
+                                    <th class="border border-gray-400 p-2 w-44">Nama Siswa</th>
+                                    <th class="border border-gray-400 p-2 w-24">Aspek</th>
+                                    <th class="border border-gray-400 p-2">Butir Sikap / Perilaku yang Diamati</th>
+                                    <th class="border border-gray-400 p-2 w-48">Tindak Lanjut</th>
+                                    <th class="border border-gray-400 p-2 w-16 no-print">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-sikap-body">
+                                <!-- JS Generated -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Signatures -->
+                    <div class="mt-12 hidden print-area">
+                        <div class="flex justify-between text-center text-sm">
+                            <div>
+                                <p>Mengetahui,</p>
+                                <p>Kepala Sekolah</p>
+                                <br /><br /><br />
+                                <p class="font-bold underline print-kepsek">...</p>
+                                <p>NIP. <span class="print-nip-kepsek">...</span></p>
+                            </div>
+                            <div>
+                                <p><span class="print-lokasi-tanggal">Jakarta, ........................ 20...</span></p>
+                                <p>Guru Mata Pelajaran</p>
+                                <br /><br /><br />
+                                <p class="font-bold underline print-guru">...</p>
+                                <p>NIP. <span class="print-nip">...</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Input Form -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 no-print">
+            <div id="jurnal-mengajar-formcard" class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 no-print">
                 <h3 id="jurnal-form-title" class="font-bold text-gray-800 mb-4 border-b pb-2">Input Jurnal Kegiatan</h3>
                 <form id="form-jurnal" class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
@@ -3801,6 +3951,7 @@
         let dataAnalisis = {}; // Stores Analysis Inputs { "tapel_smt_monthIdx": { total: 4, ne: 0, ket: '' } }
         let dataKktp = {}; // Stores KKTP inputs
         let dataJurnal = []; // Stores Jurnal entries
+        let dataSikap = []; // Jurnal Perkembangan Sikap Spiritual & Sosial
         let dataModul = []; // Stores Modul Ajar / RPP entries
         let dataAbsensi = {}; // Stores Absensi data
         let dataAsesmen = []; // Stores Assessment Plans
@@ -23610,6 +23761,7 @@
                 analisis: dataAnalisis,
                 kktp: dataKktp,
                 jurnal: dataJurnal,
+                sikap: dataSikap,
                 modul: dataModul,
                 absensi: dataAbsensi,
                 asesmen: dataAsesmen,
@@ -23634,6 +23786,7 @@
                 dataAnalisis = parsed.analisis || {};
                 dataKktp = parsed.kktp || {};
                 dataJurnal = parsed.jurnal || [];
+                dataSikap = parsed.sikap || [];
                 dataModul = parsed.modul || [];
                 dataAbsensi = parsed.absensi || {};
                 dataAsesmen = parsed.asesmen || [];
@@ -23778,6 +23931,7 @@
                 analisis: dataAnalisis,
                 kktp: dataKktp,
                 jurnal: dataJurnal,
+                sikap: dataSikap,
                 absensi: dataAbsensi,
                 jadwal: dataJadwal
             };
@@ -26632,6 +26786,209 @@
                 if (editingJurnalId === id) editingJurnalId = null;
                 saveDataLocally();
                 renderJurnal();
+            }
+        }
+
+        // ============ JURNAL PERKEMBANGAN SIKAP SPIRITUAL & SOSIAL ============
+        let jurnalMode = 'mengajar';   // 'mengajar' | 'sikap'
+        let editingSikapId = null;
+
+        function toggleJurnalMode() {
+            jurnalMode = (jurnalMode === 'sikap') ? 'mengajar' : 'sikap';
+            const sikap = jurnalMode === 'sikap';
+            ['jurnal-head-mengajar', 'jurnal-mengajar-formcard', 'print-jurnal'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hide', sikap);
+            });
+            const wrap = document.getElementById('jurnal-sikap-wrap');
+            if (wrap) wrap.classList.toggle('hide', !sikap);
+            if (sikap) renderJurnalSikap();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderJurnalSikap() {
+            const tbody = document.getElementById('table-sikap-body');
+            if (!tbody) return;
+
+            // 1. Init filter kelas (pembatasan akses sama dengan jurnal mengajar)
+            const klsSel = document.getElementById('sikap-filter-kelas');
+            const sess = getSession();
+            if (klsSel && klsSel.options.length === 0) {
+                let kOpts = masterData.kelas || [];
+                if (sess && sess.role !== 'admin') {
+                    const allowedK = getAllowedKelasList();
+                    if (allowedK.length) kOpts = allowedK;
+                }
+                klsSel.innerHTML = kOpts.map(k => `<option value="${k}" ${k == identitas.kelas ? 'selected' : ''}>Kelas ${k}</option>`).join('');
+                if (!kOpts.length) klsSel.innerHTML = '<option value="">(No Kelas)</option>';
+            }
+            const currentKls = (klsSel && klsSel.value) ? klsSel.value : identitas.kelas;
+            const info = document.getElementById('sikap-kelas-info');
+            if (info) info.innerText = currentKls || '...';
+
+            // 2. Dropdown siswa mengikuti kelas aktif
+            const siswaSel = document.getElementById('sikap-siswa');
+            if (siswaSel) {
+                const students = (masterData.siswa || []).filter(s =>
+                    String(s.kelas) === String(currentKls) &&
+                    (!s.tapel || s.tapel === identitas.tapel)
+                );
+                let h = '<option value="">-- Pilih Siswa --</option>';
+                students.forEach(s => { h += `<option value="${escapeHtml(s.nama)}">${escapeHtml(s.nama)}</option>`; });
+                h += '<option value="custom">-- Ketik Nama Manual --</option>';
+                siswaSel.innerHTML = h;
+                siswaSel.onchange = (e) => {
+                    if (e.target.value === 'custom') {
+                        const val = prompt('Ketik nama siswa secara manual:');
+                        if (val && val.trim()) {
+                            const opt = document.createElement('option');
+                            opt.value = val.trim(); opt.text = val.trim(); opt.selected = true;
+                            e.target.add(opt, e.target.options[e.target.options.length - 1]);
+                        } else {
+                            e.target.value = '';
+                        }
+                    }
+                };
+            }
+
+            // 3. Tabel data
+            tbody.innerHTML = '';
+            let filtered = dataSikap.filter(d =>
+                (d.tapel === identitas.tapel) &&
+                (d.semester === identitas.semester) &&
+                (d.kelas === currentKls)
+            );
+            filtered = applyGuruAccessFilter(filtered);
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            document.querySelectorAll('#print-jurnal-sikap .print-kelas-sikap').forEach(el => el.innerText = currentKls ? ('Kelas ' + currentKls) : '...');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">Belum ada catatan perkembangan sikap untuk filter ini.</td></tr>`;
+                updatePrintData();
+                return;
+            }
+
+            const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            filtered.forEach((item, idx) => {
+                const dateStr = new Date(item.date).toLocaleDateString('id-ID', options);
+                const aspekBadge = item.aspek === 'Spiritual'
+                    ? '<span class="inline-block bg-violet-100 text-violet-700 text-[10px] font-bold px-2 py-1 rounded">SPIRITUAL</span>'
+                    : '<span class="inline-block bg-teal-100 text-teal-700 text-[10px] font-bold px-2 py-1 rounded">SOSIAL</span>';
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="border border-gray-400 p-2 text-center align-top">${filtered.length - idx}</td>
+                    <td class="border border-gray-400 p-2 align-top">${dateStr}</td>
+                    <td class="border border-gray-400 p-2 align-top font-medium">${escapeHtml(item.nama)}</td>
+                    <td class="border border-gray-400 p-2 text-center align-top">${aspekBadge}</td>
+                    <td class="border border-gray-400 p-2 align-top">${escapeHtml(item.perilaku)}</td>
+                    <td class="border border-gray-400 p-2 align-top">${escapeHtml(item.tindak || '-')}</td>
+                    <td class="border border-gray-400 p-2 text-center no-print">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="editJurnalSikap(${item.id})" class="text-blue-600 hover:text-blue-800" title="Edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteJurnalSikap(${item.id})" class="text-red-600 hover:text-red-800" title="Hapus"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updatePrintData();
+        }
+
+        function addJurnalSikap() {
+            const klsSel = document.getElementById('sikap-filter-kelas');
+            const currentKls = klsSel ? klsSel.value : identitas.kelas;
+            if (!identitas.tapel || !currentKls) {
+                alert('Harap lengkapi Identitas Sekolah atau pilih filter kelas terlebih dahulu.');
+                return;
+            }
+
+            const date = document.getElementById('sikap-date').value;
+            const nama = document.getElementById('sikap-siswa').value;
+            const aspek = document.getElementById('sikap-aspek').value;
+            const perilaku = document.getElementById('sikap-perilaku').value.trim();
+            const tindak = document.getElementById('sikap-tindak').value.trim();
+
+            if (!date || !nama || !perilaku) {
+                alert('Tanggal, Nama Siswa, dan Catatan Perilaku wajib diisi!');
+                return;
+            }
+
+            if (editingSikapId) {
+                const idx = dataSikap.findIndex(d => d.id === editingSikapId);
+                if (idx !== -1) {
+                    dataSikap[idx] = { ...dataSikap[idx], date: date, nama: nama, aspek: aspek, perilaku: perilaku, tindak: tindak };
+                }
+                editingSikapId = null;
+            } else {
+                dataSikap.push({
+                    id: Date.now(),
+                    tapel: identitas.tapel,
+                    semester: identitas.semester,
+                    kelas: currentKls,
+                    date: date,
+                    nama: nama,
+                    aspek: aspek,
+                    perilaku: perilaku,
+                    tindak: tindak
+                });
+            }
+
+            saveDataLocally();
+            cancelEditJurnalSikap();
+        }
+
+        function editJurnalSikap(id) {
+            const item = dataSikap.find(d => d.id === id);
+            if (!item) return;
+
+            const klsSel = document.getElementById('sikap-filter-kelas');
+            if (klsSel) klsSel.value = item.kelas;
+            renderJurnalSikap(); // segarkan dropdown siswa utk kelas tsb
+            editingSikapId = id;
+
+            document.getElementById('sikap-form-title').innerText = 'Edit Catatan Perkembangan Sikap';
+            document.getElementById('btn-cancel-sikap').classList.remove('hidden');
+            document.getElementById('btn-save-sikap').innerHTML = '<i class="fas fa-check mr-2"></i> Update Catatan';
+
+            document.getElementById('sikap-date').value = item.date;
+            document.getElementById('sikap-aspek').value = item.aspek || 'Spiritual';
+            document.getElementById('sikap-perilaku').value = item.perilaku || '';
+            document.getElementById('sikap-tindak').value = item.tindak || '';
+
+            const siswaSel = document.getElementById('sikap-siswa');
+            if (siswaSel) {
+                let found = false;
+                for (let i = 0; i < siswaSel.options.length; i++) {
+                    if (siswaSel.options[i].value === item.nama) { siswaSel.selectedIndex = i; found = true; break; }
+                }
+                if (!found && item.nama) {
+                    const opt = document.createElement('option');
+                    opt.value = item.nama; opt.text = item.nama; opt.selected = true;
+                    siswaSel.add(opt, siswaSel.options[siswaSel.options.length - 1]);
+                }
+            }
+            document.getElementById('sikap-form-title').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEditJurnalSikap() {
+            editingSikapId = null;
+            document.getElementById('sikap-form-title').innerText = 'Input Catatan Perkembangan Sikap';
+            document.getElementById('btn-cancel-sikap').classList.add('hidden');
+            document.getElementById('btn-save-sikap').innerHTML = '<i class="fas fa-save mr-2"></i> Simpan Catatan Sikap';
+            document.getElementById('sikap-date').value = '';
+            document.getElementById('sikap-aspek').value = 'Spiritual';
+            document.getElementById('sikap-perilaku').value = '';
+            document.getElementById('sikap-tindak').value = '';
+            renderJurnalSikap();
+        }
+
+        function deleteJurnalSikap(id) {
+            if (confirm('Hapus catatan perkembangan sikap ini?')) {
+                dataSikap = dataSikap.filter(d => d.id !== id);
+                if (editingSikapId === id) editingSikapId = null;
+                saveDataLocally();
+                renderJurnalSikap();
             }
         }
 
@@ -29559,18 +29916,24 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
 
         function jdwCellHtml(entries) {
             const admin = isAdmin();
+            const pasteMode = !!jadwalClipboard;
             return entries.map(e => {
                 const clash = cekBentrok(e, e.id).length > 0;
                 const colorCls = getMapelColorClass(e.mapel);
                 const cls = clash ? 'jdw-slot bentrok' : 'jdw-slot ' + colorCls;
                 const badge = clash ? ' <span class="jdw-badge-bentrok">BENTROK</span>' : '';
-                const clickAttr = admin ? `onclick="editJadwal('${e.id}')"` : '';
-                const editBtns = admin ? `<span class="act">
+                const clickAttr = (admin && !pasteMode) ? `onclick="editJadwal('${e.id}')"` : '';
+                const copyBtn = `<button onclick="event.stopPropagation(); jdwCopyCell('${e.id}')" class="text-violet-600 hover:text-violet-800 mr-1" title="${pasteMode ? 'Ganti salinan: pakai isi sel ini' : 'Salin isi sel (mapel + guru + ruang)'}"><i class="fas fa-clone"></i></button>`;
+                const editBtns = admin ? (pasteMode
+                    ? `<span class="act" style="display:block">${copyBtn}</span>`
+                    : `<span class="act">
+                        ${copyBtn}
                         <button onclick="event.stopPropagation(); editJadwal('${e.id}')" class="text-blue-600 hover:text-blue-800 mr-1" title="Edit"><i class="fas fa-edit"></i></button>
                         <button onclick="event.stopPropagation(); hapusJadwal('${e.id}')" class="text-red-600 hover:text-red-800" title="Hapus"><i class="fas fa-trash"></i></button>
-                    </span>` : '';
+                    </span>`) : '';
                 
-                return `<div class="${cls}" ${clickAttr} title="${admin ? 'Klik untuk edit: ' : ''}${escapeHtml(e.mapel + ' — ' + (e.guru || '-') + (e.ruang ? ' (' + e.ruang + ')' : '') + (clash ? ' [BENTROK]' : ''))}">
+                const titlePrefix = pasteMode ? 'Mode Tempel aktif — klik area sel untuk MENEMPEL salinan. ' : (admin ? 'Klik untuk edit: ' : '');
+                return `<div class="${cls}" ${clickAttr} title="${titlePrefix}${escapeHtml(e.mapel + ' — ' + (e.guru || '-') + (e.ruang ? ' (' + e.ruang + ')' : '') + (clash ? ' [BENTROK]' : ''))}">
                     <span class="mp">${escapeHtml(getMapelSingkatan(e.mapel))}</span>
                     <span class="gr">${escapeHtml(getGuruSingkatan(e.guru))}</span>
                     ${e.ruang ? `<span class="tm"><i class="fas fa-door-open"></i> ${escapeHtml(e.ruang)}</span>` : ''}
@@ -29619,12 +29982,12 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                             <b>${escapeHtml(slot.label)}</b><br>${slot.mulai} - ${slot.selesai}</td>`;
                     kelasList.forEach(kls => {
                         const entries = (cellMap[hari + '|' + timeToMin(slot.mulai)] || []).filter(e => e.kelas === kls);
+                        const klsEsc = escapeHtml(String(kls)).replace(/'/g, '&#39;');
                         if (entries.length) {
-                            html += `<td>${jdwCellHtml(entries)}</td>`;
+                            html += `<td class="jdw-cell-fill" onclick="jdwCellClick('${hari}','${klsEsc}','${slot.mulai}','${slot.selesai}')">${jdwCellHtml(entries)}</td>`;
                         } else {
-                            const klsEsc = escapeHtml(String(kls)).replace(/'/g, '&#39;');
                             if (isAdmin()) {
-                                html += `<td class="jdw-cell" onclick="openJadwalModalByCell('${hari}','${klsEsc}','${slot.mulai}','${slot.selesai}')" title="Klik untuk tambah: ${escapeHtml(hari + ' ' + kls + ' ' + slot.label + ' (' + slot.mulai + '-' + slot.selesai + ')')}">
+                                html += `<td class="jdw-cell" onclick="jdwCellClick('${hari}','${klsEsc}','${slot.mulai}','${slot.selesai}')" title="Klik untuk tambah: ${escapeHtml(hari + ' ' + kls + ' ' + slot.label + ' (' + slot.mulai + '-' + slot.selesai + ')')}">
                                     <div class="jdw-empty"><i class="fas fa-plus"></i></div>
                                 </td>`;
                             } else {
@@ -29866,6 +30229,94 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
         // Klik sel kosong pada matriks -> form input terisi otomatis (hari, kelas, jam)
         function openJadwalModalByCell(hari, kelas, jamMulai, jamSelesai) {
             openJadwalModal(null, { hari: hari, kelas: kelas, jamMulai: jamMulai, jamSelesai: jamSelesai });
+        }
+
+        // ============ SALIN / TEMPEL SEL JADWAL (CLONE) ============
+        // Klik ikon "clone" pada sebuah sel -> isi sel (mapel+guru+ruang) tersalin,
+        // lalu KLIK sel lain (kosong maupun terisi) untuk menempelkannya berulang kali.
+        // Cek bentrok & target beban tetap berlaku seperti input manual.
+        // Tekan Esc atau tombol "Selesai" untuk keluar dari Mode Tempel.
+        let jadwalClipboard = null; // { mapel, guru, ruang }
+
+        function jdwCopyCell(id) {
+            if (!isAdmin()) return;
+            const e = dataJadwal.find(x => x.id === id);
+            if (!e) return;
+            jadwalClipboard = { mapel: e.mapel, guru: e.guru || '', ruang: e.ruang || '' };
+            document.body.classList.add('jdw-paste-mode');
+            jdwShowPasteBar();
+            renderJadwal(); // segarkan tampilan: sel berubah jadi mode tempel
+            if (typeof toastSync === 'function') toastSync('Tersalin: ' + jadwalClipboard.mapel + ' — klik sel lain untuk menempel.');
+        }
+
+        function jdwShowPasteBar() {
+            let bar = document.getElementById('jdw-paste-bar');
+            if (!bar) {
+                bar = document.createElement('div');
+                bar.id = 'jdw-paste-bar';
+                (document.body || document.documentElement).appendChild(bar);
+            }
+            bar.innerHTML = '<i class="fas fa-clone"></i><span>Mode Tempel: <b>' +
+                escapeHtml(jadwalClipboard.mapel) + '</b> · ' + escapeHtml(jadwalClipboard.guru || '-') +
+                (jadwalClipboard.ruang ? ' · ' + escapeHtml(jadwalClipboard.ruang) : '') +
+                ' — klik sel mana saja untuk menempel (bisa berulang)</span>' +
+                '<button type="button" onclick="jdwCancelPaste()">Selesai ✕</button>';
+        }
+
+        function jdwCancelPaste() {
+            jadwalClipboard = null;
+            document.body.classList.remove('jdw-paste-mode');
+            const bar = document.getElementById('jdw-paste-bar');
+            if (bar) bar.remove();
+            try { renderJadwal(); } catch (e) {}
+        }
+
+        // Keluar mode tempel dengan tombol Esc
+        window.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape' && jadwalClipboard) jdwCancelPaste();
+        });
+
+        // Router klik sel matriks: mode tempel -> tempel; normal -> buka modal tambah
+        function jdwCellClick(hari, kelas, jamMulai, jamSelesai) {
+            if (jadwalClipboard) { jdwPasteCell(hari, kelas, jamMulai, jamSelesai); return; }
+            openJadwalModalByCell(hari, kelas, jamMulai, jamSelesai);
+        }
+
+        function jdwPasteCell(hari, kelas, jamMulai, jamSelesai) {
+            if (!jadwalClipboard || !isAdmin()) return;
+            const f = (typeof getJadwalFilter === 'function') ? getJadwalFilter() : {};
+            const entry = {
+                tapel: f.tapel || identitas.tapel || '',
+                semester: f.semester || identitas.semester || '',
+                hari: hari,
+                kelas: kelas,
+                jamMulai: jamMulai,
+                jamSelesai: jamSelesai,
+                mapel: jadwalClipboard.mapel,
+                guru: jadwalClipboard.guru,
+                ruang: jadwalClipboard.ruang
+            };
+            const cs = cekBentrok(entry, null);
+            if (cs.length) {
+                alert('TIDAK ditempel di ' + hari + ' ' + kelas + ' (' + jamMulai + '-' + jamSelesai + ') karena BENTROK:\n\n' +
+                    cs.map(c => '\u2022 ' + c.jenis + ': ' + c.desc).join('\n') +
+                    '\n\nSalinan tetap aktif — silakan klik sel lain.');
+                return;
+            }
+            if (typeof cekOverTarget === 'function') {
+                const ov = cekOverTarget(entry, null);
+                if (ov.length) {
+                    alert('TIDAK ditempel di ' + hari + ' ' + kelas + ' karena MELEBIHI TARGET BEBAN:\n\n' +
+                        ov.map(c => '\u2022 ' + c.jenis + ': ' + c.desc).join('\n') +
+                        '\n\nSalinan tetap aktif — silakan klik sel lain atau sesuaikan beban di Data Master.');
+                    return;
+                }
+            }
+            entry.id = 'jd_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+            dataJadwal.push(entry);
+            saveDataLocally();
+            renderJadwal();
+            if (typeof toastSync === 'function') toastSync('✔ Ditempel: ' + entry.mapel + ' → ' + hari + ' ' + kelas + ' (' + jamMulai + '-' + jamSelesai + ')');
         }
 
         // === ISI SERENTAK: mapel yg sama di SEMUA kelas pada jam tertentu ===
