@@ -1,0 +1,9 @@
+{
+  "name": "perangkat-ajar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplikasi Perangkat Ajar — frontend statis + backend serverless (Neon Postgres)",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}
