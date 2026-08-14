@@ -4073,7 +4073,10 @@
             'Seni Musik',
             'Pendidikan Jasmani, Olahraga dan Kesehatan (PJOK)',
             'Prakarya dan Informatika',
-            'Bimbingan dan Konseling (BK)'
+            'Bimbingan dan Konseling (BK)',
+            'Bahasa Jawa',
+            'Bahasa Arab',
+            'Kemuhammadiyahan'
         ];
         // ============================================================
         //  JJM (Jumlah Jam Mengajar) — Struktur Kurikulum Merdeka SMP/MTs
@@ -4112,7 +4115,7 @@
             if (/koding|coding|kecerdasan\s*artifisial|artificial|\bai\b/.test(n)) return 'Koding dan Kecerdasan Artifisial';
             if (/\binformatika\b|\btik\b|teknologi\s*informasi|\bkomputer\b|prakarya/.test(n)) return 'Informatika';
             if (/seni|\bsbk\b|budaya/.test(n)) return 'Seni dan Budaya';
-            if (/muatan\s*lokal|\bmulok\b|\bbahasa\s*(jawa|sunda|daerah|bali|madura)\b/.test(n)) return 'Muatan Lokal';
+            if (/muatan\s*lokal|\bmulok\b|\bbahasa\s*(jawa|sunda|daerah|bali|madura|arab)\b|kemuhammadiyahan/.test(n)) return 'Muatan Lokal';
             if (/\bbk\b|bimbingan/.test(n)) return 'Bimbingan dan Konseling';
             return null;
         }
@@ -5564,6 +5567,9 @@
             if (/\bpjok\b|penjaskes|olahraga|jasmani/.test(n)) return "PJOK (SMP)";
             if (/\bprakarya\b|\binformatika\b|\btik\b|teknologi\s*informasi|\bkomputer\b/.test(n)) return "Prakarya / Informatika (SMP)";
             if (/\bbk\b|bimbingan\s*konseling/.test(n)) return "Bimbingan Konseling";
+            if (/bahasa\s*jawa|\bjawa\b/.test(n)) return "Bahasa Jawa (SMP)";
+            if (/bahasa\s*arab|\barab\b/.test(n)) return "Bahasa Arab (SMP)";
+            if (/kemuhammadiyahan|muhammadiyah/.test(n)) return "Kemuhammadiyahan (SMP)";
             return Object.keys(CP_MAPEL_SMP_2025).find(k => n.includes(k.toLowerCase().replace(" (smp)",""))) || null;
         }
 
@@ -22931,6 +22937,406 @@
                 }
             };
 
+
+// ============================================================================
+        // CP & ATP MUATAN LOKAL (Referensi Terbaru — Fase D SMP/MTs, Kelas 7-9):
+        //   • Bahasa Jawa       : CP BSKAP No. 032/H/KR/2024 (Muatan Lokal Bahasa &
+        //                         Sastra Daerah) disesuaikan dgn struktur Permendikdasmen 46/2025
+        //   • Bahasa Arab       : Panduan muatan lokal Bahasa Arab madrasah/sekolah
+        //                         (4 maharah: istima', kalam, qira'ah, kitabah + nahwu-sharf)
+        //   • Kemuhammadiyahan  : Panduan Majelis Dikdasmen PP Muhammadiyah
+        //                         (Sejarah-Tokoh, KVM, Ortom-AUM, Pengamalan-Kepmimpinan)
+        // Catatan: muatan lokal kewenangan daerah/penyelenggara — sesuaikan dgn panduan dinas/majelis setempat.
+        // ============================================================================
+        Object.assign(CP_MAPEL_SMP_2025, {
+            "Bahasa Jawa (SMP)": {
+                "nama": "Bahasa Jawa",
+                "umum": "Pada akhir Fase D, peserta didik mampu berkomunikasi menggunakan bahasa Jawa (ngoko lan krama) secara lisan dan tulis sesuai unggah-ungguh basa; menyimak, membaca, dan menciptakan teks narasi, deskripsi, pawarta, cerita cekak, geguritan, dan sesorah; mengapresiasi sastra (tembang macapat, cerita wayang) serta aksara Jawa; dan meneladani nilai-nilai kearifan budaya Jawa untuk memperkuat karakter Profil Pelajar Pancasila.",
+                "elemen": {
+                    "Menyimak dan Berbicara (Pirena-Sesorah)": "Menyimak dongeng, pawarta, wawancara, dan teks lisan bahasa Jawa; berbicara (sesorah, presentasi, dialog, diskusi) menggunakan ngoko, krama madya, dan krama inggil sesuai mitra tutur dengan etiket Jawa yang santun.",
+                    "Membaca (Maca)": "Membaca dan memahami teks gancaran (narasi, deskripsi, eksposisi) dan teks sastra (cerkak, geguritan, tembang macapat, cerita wayang): menemukan pokok isi, unsur intrinsik, amanat, serta membandingkan gagasan teks.",
+                    "Menulis (Serat)": "Menulis teks narasi, deskripsi, laporan/pawarta, surat pribadi dan resmi, cerita cekak, geguritan, dan teks sesorah dengan pilihan kata, ejaan (ortografi), dan unggah-ungguh yang tepat, termasuk penulisan aksara Jawa lan sandhangane.",
+                    "Basa, Sastra, aksara, dan Budaya Jawa": "Mengenal tataraning basa (ngoko, krama), sanepa, paribasan, bebasan, saloka, dan wangsalan; menguasai aksara Jawa hanacaraka lan murda; mengapresiasi tembang macapat, wayang, dolanan bocah, adat tradisi, batik, dan keris sebagai kearifan lokal.",
+                    "Sikap dan Pelestarian": "Meneladani sopan-santun (andhap asor, empan papan), gotong royong, dan tepa selira; berperan aktif melestarikan bahasa, aksara, dan budaya Jawa melalui karya dan proyek nyata."
+                }
+            },
+            "Bahasa Arab (SMP)": {
+                "nama": "Bahasa Arab",
+                "umum": "Pada akhir jenjang, peserta didik mampu berkomunikasi dalam bahasa Arab sederhana melalui empat keterampilan (istima', kalam, qira'ah, kitabah); memahami ungkapan sehari-hari, teks pendek, dan kaidah nahwu-sharf dasar (jumlah ismiyah-fi'liyah, idhafah, mufrad-mutsanna-jamak); menulis kalimat dan paragraf sederhana dengan ejaan yang tepat; serta menghayati bahasa Arab sebagai kunci memahami sumber ajaran Islam dan khazanah peradaban Islam.",
+                "elemen": {
+                    "Al-Istima' (Menyimak)": "Menyimak salam, ta'aruf, perintah, percakapan, dan teks pendek bahasa Arab; menangkap informasi pokok (tokoh, waktu, tempat, kegiatan) dan merespons dengan ungkapan yang sesuai.",
+                    "Al-Kalam (Berbicara)": "Mempraktikkan ungkapan sehari-hari (salam, syukran, afwan, min fadlik), memperkenalkan diri dan orang lain, percakapan di sekolah/pasar/rumah, serta presentasi dan tanya jawab sederhana dengan pelafalan yang benar.",
+                    "Al-Qira'ah (Membaca)": "Membaca nyaring teks pendek dengan tartil; memahami isi teks (judul, ide pokok, mufradat kunci, pesan); menjawab pertanyaan dan menceritakan kembali isi teks secara ringkas.",
+                    "Al-Kitabah (Menulis)": "Menulis huruf bersambung, kata, dan kalimat dengan imla' yang benar; menyusun kata menjadi kalimat; menulis teks pendek (deskripsi diri/keluarga/sekolah/hobi, pengumuman) menggunakan kaidah yang telah dipelajari.",
+                    "Al-Lughah wa An-Nahwu Ash-Sharf (Kosakata dan Kaidah)": "Menguasai mufradat tematik (diri, keluarga, sekolah, waktu, hobi); memahami isim-fi'il-harf, pola jumlah ismiyah (mubtada'-khabar) dan fi'liyah (fi'il-fa'il), mudzakkar-muannats, mufrad-mutsanna-jamak, idhafah, dan shifah-maushuf."
+                }
+            },
+            "Kemuhammadiyahan (SMP)": {
+                "nama": "Kemuhammadiyahan",
+                "umum": "Pada akhir jenjang, peserta didik memahami sejarah, nilai-nilai utama (KVM), dan ideologi Muhammadiyah; mengenal tokoh pendiri, organisasi otonom, dan amal usaha Muhammadiyah; mengamalkan nilai Islam berkemajuan (tajdid), akhlak mulia, dan semangat gotong royong dalam kehidupan sehari-hari; serta bangga berperan aktif dalam gerakan Muhammadiyah sebagai kader pelajar.",
+                "elemen": {
+                    "Sejarah dan Tokoh Muhammadiyah": "Memahami latar dan kelahiran Muhammadiyah (18 November 1912, Yogyakarta), keteladanan KH Ahmad Dahlan dan Nyai Ahmad Dahlan (Siti Walidah), perkembangan gerakan masa ke masa, serta peran Muhammadiyah bagi bangsa Indonesia.",
+                    "Nilai-nilai dan Ideologi": "Mengenal nilai-nilai utama Kemuhammadiyahan dan pokok pikiran Muqaddimah Anggaran Dasar; memahami tajdid (pembaruan), Islam berkemajuan, dan Islam rahmatan lil 'alamin serta penerapannya dalam sikap.",
+                    "Ortom dan Amal Usaha": "Mengenal organisasi otonom (Aisyiyah, Pemuda Muhammadiyah, Nasyiatul Aisyiyah, Tapak Suci, Hizbul Wathan, Ikatan Pelajar Muhammadiyah) beserta perannya, serta amal usaha Muhammadiyah bidang pendidikan, kesehatan, sosial, dan ekonomi.",
+                    "Pengamalan dan Kepemimpinan": "Mengamalkan nilai Muhammadiyah (jujur, disiplin, kerja keras, tolong-menolong, peduli sosial) dalam keseharian; melatih kepemimpinan dan musyawarah melalui IPM; berdakwah positif sesuai usia pelajar.",
+                    "Studi dan Proyek Sosial": "Melakukan observasi/kajian sederhana terhadap amal usaha dan kegiatan Muhammadiyah di lingkungan sekitar; merancang dan melaksanakan aksi sosial serta merefleksikan hikmahnya."
+                }
+            }
+        });
+
+// ── Alur Tujuan Pembelajaran (ATP) Muatan Lokal: Bahasa Jawa, Bahasa Arab, Kemuhammadiyahan (Fase D, kelas 7-9) ──
+// Disusun selaras CP pada CP_MAPEL_SMP_2025 (lihat komentar di atas). Format: referensiCP[mapel][kelas][semester] = { "Bab": {cp, tps:[{tp,materi,jp}]} }
+Object.assign(referensiCP, {
+  "Bahasa Jawa (SMP)": {
+    "7": {
+      "1": {
+        "Bab 1: Crita Lan Unggah-Ungguh Basa": {
+          cp: "Peserta didik mampu ngrungokake, mangerteni, lan nyritakake crita lokal sarta migunakake unggah-ungguh basa Ngoko lan Krama kanthi trep.",
+          tps: [
+            { tp: "Ngrungokake crita rakyat/crita kekancan lan nemtokake pokoke crita", materi: "Rungokno crita lokal, pokok pikiran, cathetan penting", jp: 3 },
+            { tp: "Ngenalake unsur-unsur crita (tema, papan, palengdino/paraga, panyritane)", materi: "Unsur intrinsik crita narasi", jp: 3 },
+            { tp: "Migunakake basa Ngoko lan Krama Madya ing guneman sapadina-padina", materi: "Unggah-ungguh basa: Ngoko, Krama Madya, tuladha pacelathon", jp: 4 },
+            { tp: "Nyritakake maneh crita kanthi lisan lan nulis paragraf crita dhewe", materi: "Nyritakake (retelling), nyusun paragraf narasi", jp: 4 }
+          ]
+        },
+        "Bab 2: Ngenal Aksara Jawa I": {
+          cp: "Peserta didik mampu maca lan nulis aksara wyanjana lan sandhangan swara kanthi bener.",
+          tps: [
+            { tp: "Ngenalake sejarah rikat lan manfaat aksara Jawa", materi: "Aksara Carakan: sejarah lan filosofi (ha na ca ra ka …)", jp: 3 },
+            { tp: "Maca lan nulis 20 aksara wyanjana lan aksara swara", materi: "Aksara wyanjana, aksara swara (ka, nga, ja, nya, mba …)", jp: 4 },
+            { tp: "Maca lan nulis sandhangan swara (wulu, suku, pepet, taling) kanthi bener", materi: "Sandhangan swara lan panyeratane", jp: 4 },
+            { tp: "Nulis jeneng dhewe lan ukara cendhek nganggo aksara Jawa", materi: "Praktik nulis aksara: jeneng, tembung, ukara", jp: 3 }
+          ]
+        },
+        "Bab 3: Tradhisi Lisan Lan Papan Wong Lair": {
+          cp: "Peserta didik mampu memahami tradhisi lisan lan ngenalake pawarta ing kaprajan masyarakat.",
+          tps: [
+            { tp: "Ngenalake pawarta (teks warta) kanthi lisan lan tulisan", materi: "Teks pawarta/pengumuman, basa pawarta sing prasaja", jp: 3 },
+            { tp: "Migawé lan maca pawarta ing ngarep kelas", materi: "Nyusun pawarta, latihan maca kanthi intonasi trep", jp: 4 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 4: Tembang Macapat I (Dandanggula)": {
+          cp: "Peserta didik mampu ngenalake, maca, lan nembangake pupuh Dandanggula sarta mangerteni paugerane.",
+          tps: [
+            { tp: "Ngenalake paugeran tembang macapat (guru gatra, guru lagu, guru wilangan)", materi: "Paugeran macapat lan jinising pupuh", jp: 3 },
+            { tp: "Nembangake pupuh Dandanggula kanthi lantang lan irama sing trep", materi: "Pupuh Dandanggula: paugeran lan praktik nembang", jp: 4 },
+            { tp: "Mangerteni isi lan pukulune (piwulang) ing pupuh Dandanggula", materi: "Isi, watek, lan piwulang tembang", jp: 3 }
+          ]
+        },
+        "Bab 5: Cerkak I (Crita Cendhek)": {
+          cp: "Peserta didik mampu mangerteni, nganalisis, lan nggawé cerkak prasaja.",
+          tps: [
+            { tp: "Nemtokake unsur-unsur cerkak (tema, paraga, latar, amanat)", materi: "Unsur intrinsik lan ekstrinsik cerkak", jp: 3 },
+            { tp: "Mbandhingake karakteristik sawetara cerkak", materi: "Paraga lan watake, alur, latar ing cerkak", jp: 3 },
+            { tp: "Nulis cerkak prasaja kanthi tema kasrawungane siswa", materi: "Nyusun kerangka lan nulis cerkak", jp: 4 }
+          ]
+        }
+      }
+    },
+    "8": {
+      "1": {
+        "Bab 6: Aksara Jawa II (Pasangan Lan Sandhangan Wanda)": {
+          cp: "Peserta didik mampu maca lan nulis pasangan aksara lan sandhangan wanda kanthi lancar.",
+          tps: [
+            { tp: "Maca lan nulis pasangan aksara (astralekha) kanthi bener", materi: "Pasangan 20 aksara wyanjana lan paugerane", jp: 4 },
+            { tp: "Migunakake sandhangan wanda (cecak, layar, wignyan, pangkal) kanthi trep", materi: "Sandhangan wanda lan fungsine", jp: 3 },
+            { tp: "Nulis cathetan cendhek/kartu ucapan nganggo aksara Jawa", materi: "Praktik nulis ukara nganggo pasangan lan sandhangan", jp: 4 }
+          ]
+        },
+        "Bab 7: Wayang Lan Crita Pewayangan": {
+          cp: "Peserta didik mampu mangerteni seni pewayangan minangka budaya adiluhung lan nimbang nilai sing ana ing lelakone.",
+          tps: [
+            { tp: "Ngenalake jinis-jinis wayang lan paraga thokoh pewayangan", materi: "Wayang kulit/golek, paraga lan watake", jp: 3 },
+            { tp: "Mangerteni lelakon (alur crita) lan piwulang budhi pekerti kang ana ing crita wayang", materi: "Lelakon, nilai moral lan filosofi pewayangan", jp: 4 },
+            { tp: "Ngramelse peran paraga wayang kanthi dialog prasaja", materi: "Praktik drama/dialog paraga pewayangan", jp: 3 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 8: Geguritan (Puisi Basa Jawa)": {
+          cp: "Peserta didik mampu mangerteni, mbandhingake, lan nggawé geguritan.",
+          tps: [
+            { tp: "Nemtokake unsur-unsur geguritan (tema, panyikite, swasana)", materi: "Unsur-unsur geguritan/puisi basa Jawa", jp: 3 },
+            { tp: "Maca geguritan kanthi intonasi lan panyiket sing trep", materi: "Larik, bait, rima, praktik maca puisi", jp: 3 },
+            { tp: "Nulis geguritan lair kanthi tema lingkungan/kasetyan kanca", materi: "Kriya nulis geguritan prasaja", jp: 4 }
+          ]
+        },
+        "Bab 9: Surat Pribadi Lan Surat Ucapan": {
+          cp: "Peserta didik mampu nulis surat pribadi lan tanggapan kanthi kaedah sing bener.",
+          tps: [
+            { tp: "Nemtokake bagiyan-bagiyan (struktur) surat pribadi", materi: "Struktur surat pribadi, basa surat", jp: 3 },
+            { tp: "Nulis surat pribadi lan surat ucapan nganggo basa sing sopan", materi: "Praktik nyerat surat pribadi, kartu ucapan", jp: 4 }
+          ]
+        }
+      }
+    },
+    "9": {
+      "1": {
+        "Bab 10: Sesorah (Pidhato)": {
+          cp: "Peserta didik mampu nyusun naskah sesorah lan nglaksanakake sesorah kanthi yakin awake dhewe.",
+          tps: [
+            { tp: "Nemtokake tegese, ancas, lan paugeran sesorah", materi: "Pawuruk sesorah: pepadha, isi, panutup", jp: 3 },
+            { tp: "Nyusun naskah sesorah kanthi runtut lan basa kang trep", materi: "Nyusun kerangka lan naskah sesorah", jp: 4 },
+            { tp: "Nglakoni sesorah ing ngarep kelas", materi: "Utsawa (penampilan) sesorah, ekspresi, wicara", jp: 4 }
+          ]
+        },
+        "Bab 11: Sanepa, Paribasan, Bebasan, Lan Wangsalan": {
+          cp: "Peserta didik mampu mangerteni lan migunakake paribasa, bebasan, saloka, lan wangsalan kanthi trep panggunane.",
+          tps: [
+            { tp: "Nemtokake tegese paribasan, bebasan, saloka, wangsalan, lan sanepa", materi: "Jinis-jinis unen-unen jawa lan tegese", jp: 4 },
+            { tp: "Migunakake paribasan/wangsalan kanthi trep ing ukara lan guneman", materi: "Praktik migunakake unen-unen ing panyeratan lan pacelathon", jp: 3 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 12: Kritik Sastra Lan Lembar Apresiasi": {
+          cp: "Peserta didik mampu nyritakake, mengkritik, lan ngapresiasi karya sastra Jawa.",
+          tps: [
+            { tp: "Nulis kritik sastra prasaja marang sawijining karya (cerkak/geguritan)", materi: "Kritik sastra: telaah kaluwihan lan kekurangan karya", jp: 4 },
+            { tp: "Ngisi lembar apresiasi kanthi suara kritis", materi: "Apresiasi sastra, format lembar apresiasi", jp: 3 }
+          ]
+        },
+        "Bab 13: Proyek Budaya Jawa": {
+          cp: "Peserta didik mampu nggawe lan matangake proyek budaya ing kaki masyarakat sekolah.",
+          tps: [
+            { tp: "Ngrancang proyek budaya (pameran aksara/lawangan budaya/pentas macapat-geguritan)", materi: "Persiapan proyek: panitia, rancangan, dana prasaja", jp: 4 },
+            { tp: "Nglaksanakake lan nglaporkake asil proyek kanthi basa Jawa", materi: "Pelaksanaan proyek lan presentasi asil", jp: 5 }
+          ]
+        }
+      }
+    }
+  },
+  "Bahasa Arab (SMP)": {
+    "7": {
+      "1": {
+        "Bab 1: At-Ta'aruf (Perkenalan)": {
+          cp: "Peserta didik mampu berkenalan dan memperkenalkan diri menggunakan ungkapan bahasa Arab sederhana secara lisan dan tulis.",
+          tps: [
+            { tp: "Melafalkan dan memahami mufradat tentang perkenalan (ismi, anti/anta, min aina…)", materi: "Mufradat at-ta'aruf dan ungkapan salam", jp: 3 },
+            { tp: "Melakukan hiwar sederhana tentang perkenalan diri", materi: "Hiwar perkenalan di depan kelas", jp: 4 },
+            { tp: "Menulis biodata diri singkat dalam bahasa Arab", materi: "Kitabah: kartu nama/biodata diri", jp: 3 }
+          ]
+        },
+        "Bab 2: Usrati (Keluargaku)": {
+          cp: "Peserta didik mampu menyebutkan anggota keluarga dan kegemaran anggota keluarga dalam bahasa Arab.",
+          tps: [
+            { tp: "Menyebutkan mufradat anggota keluarga (ab, umm, akh, ukht, jadd, jaddah)", materi: "Mufradat keluarga dan silsilah keluarga", jp: 3 },
+            { tp: "Membaca teks ringkas tentang keluarga dan menjawab pertanyaan", materi: "Qira'ah teks keluarga", jp: 4 },
+            { tp: "Mendeskripsikan anggota keluarga secara lisan dan tulis", materi: "Kalam dan kitabah: silsilah keluargaku", jp: 3 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 3: Madrasati (Sekolahku)": {
+          cp: "Peserta didik mampu berbicara tentang lingkungan dan kegiatan sekolah dalam bahasa Arab.",
+          tps: [
+            { tp: "Melafalkan mufradat sarana dan kegiatan sekolah", materi: "Mufradat madrasah: fashl, thalabah, muallim, qalam", jp: 3 },
+            { tp: "Melakukan percakapan tentang jadwal pelajaran dan kegiatan sekolah", materi: "Hiwar tentang mawad (mapel) dan kegiatan", jp: 4 },
+            { tp: "Menyusun jadwal pelajaran dalam bahasa Arab", materi: "Kitabah: jadual al-mawad", jp: 3 }
+          ]
+        },
+        "Bab 4: Al-'Adad wal Waqt (Bilangan dan Waktu)": {
+          cp: "Peserta didik mampu menggunakan bilangan dasar dan menyebutkan waktu/hari dalam bahasa Arab.",
+          tps: [
+            { tp: "Menyebutkan bilangan 1-20 dan menggunakannya dalam kalimat", materi: "Al-a'dad (bilangan) dan penggunaannya", jp: 3 },
+            { tp: "Menyebutkan nama hari, bulan, dan jam (as-sa'ah) dengan benar", materi: "Al-Ayyam, asy-syuhur, as-sa'ah", jp: 3 },
+            { tp: "Menceritakan kegiatan harian berdasarkan waktu", materi: "Kalam: rutinitas harian dan waktu", jp: 4 }
+          ]
+        }
+      }
+    },
+    "8": {
+      "1": {
+        "Bab 5: Bayti (Rumahku)": {
+          cp: "Peserta didik mampu mendeskripsikan rumah dan ruang-ruangnya dalam bahasa Arab.",
+          tps: [
+            { tp: "Menyebutkan mufradat rumah dan perabotannya", materi: "Mufradat bayt: ghorfah, mathbakh, hammaam", jp: 3 },
+            { tp: "Membaca peta/denah rumah dan menjelaskan letak ruangan", materi: "Istima' dan kalam: denah rumah", jp: 3 },
+            { tp: "Menulis deskripsi rumah sederhana", materi: "Kitabah: deskripsi bayti", jp: 4 }
+          ]
+        },
+        "Bab 6: Nahwu Dasar (Jumlah Ismiyah dan Fi'liyah)": {
+          cp: "Peserta didik memahami struktur kalimat dasar bahasa Arab (jumlah ismiyah dan fi'liyah).",
+          tps: [
+            { tp: "Membedakan jumlah ismiyah dan jumlah fi'liyah", materi: "Pengertian dan contoh jumlah ismiyah-fi'liyah", jp: 4 },
+            { tp: "Menyusun mubtada' dan khabar menjadi kalimat sempurna", materi: "Mubtada'-khabar, fi'il-fa'il", jp: 4 },
+            { tp: "Menerapkan kaidah mufrad-mutsanna dan isim isyarah dalam kalimat", materi: "Mufrad-mutsanna, hadza-hadzihi", jp: 3 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 7: Hiwayati (Hobiku) dan Riyadhah": {
+          cp: "Peserta didik mampu mengungkapkan hobi dan kegemaran olahraga dalam bahasa Arab.",
+          tps: [
+            { tp: "Melafalkan mufradat hobi dan olahraga", materi: "Mufradat hibah/riyadhah (kurah, sibahah…)", jp: 3 },
+            { tp: "Berhiwar tentang hobi dan alasannya", materi: "Hiwar hiwayah", jp: 4 },
+            { tp: "Menulis paragraf pendek tentang hobi", materi: "Kitabah: paragraf hiwayati", jp: 3 }
+          ]
+        },
+        "Bab 8: Al-Qira'ah (Teks Bacaan)": {
+          cp: "Peserta didik mampu membaca dan memahami teks bacaan bahasa Arab ringkas.",
+          tps: [
+            { tp: "Membaca teks qira'ah dengan tartil", materi: "Qira'ah teks ringkas (madrasah/keluarga/lingkungan)", jp: 3 },
+            { tp: "Menjawab pertanyaan isi bacaan (istifham)", materi: "Pemahaman isi bacaan, istifham", jp: 4 }
+          ]
+        }
+      }
+    },
+    "9": {
+      "1": {
+        "Bab 9: Al-Idhafah dan Shifah-Maushuf": {
+          cp: "Peserta didik memahami kaidah idhafah serta shifah-maushuf dan menggunakannya dalam kalimat.",
+          tps: [
+            { tp: "Menyusun kalimat dengan struktur idhafah", materi: "Mudhaf-mudhaf ilaih", jp: 4 },
+            { tp: "Membedakan dan menggunakan shifah maushuf", materi: "Kata sifat dan penyifatan", jp: 3 },
+            { tp: "Menggunakan adat istifham dalam tanya jawab", materi: "Hal, man, ma, aina, mata", jp: 3 }
+          ]
+        },
+        "Bab 10: Al-Insya' (Karangan Sederhana)": {
+          cp: "Peserta didik mampu menulis karangan/surat sederhana dalam bahasa Arab.",
+          tps: [
+            { tp: "Menyusun kerangka karangan (insya') bertema lingkungan sekolah", materi: "Struktur karangan bahasa Arab sederhana", jp: 4 },
+            { tp: "Menulis karangan 3-5 kalimat dengan kaidah yang dipelajari", materi: "Praktik insya'", jp: 4 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 11: Al-I'lan (Pengumuman/Poster)": {
+          cp: "Peserta didik mampu membuat pengumuman dan poster sederhana dalam bahasa Arab.",
+          tps: [
+            { tp: "Memahami struktur dan bahasa i'lan", materi: "Teks i'lan: judul, isi, waktu, tempat", jp: 3 },
+            { tp: "Membuat i'lan/poster tasmi' atau kegiatan sekolah", materi: "Proyek poster berbahasa Arab", jp: 4 }
+          ]
+        },
+        "Bab 12: Nasyid dan Proyek Kalam": {
+          cp: "Peserta didik mampu mempresentasikan kemampuan berbahasa Arab melalui nasyid dan proyek kalam.",
+          tps: [
+            { tp: "Membaca dan memahami lirik nasyid berbahasa Arab", materi: "Nasyid: kosa kata dan makna", jp: 3 },
+            { tp: "Menampilkan nasyid/presentasi kalam sebagai proyek akhir", materi: "Pentas nasyid/pidato pendek bahasa Arab", jp: 5 }
+          ]
+        }
+      }
+    }
+  },
+  "Kemuhammadiyahan (SMP)": {
+    "7": {
+      "1": {
+        "Bab 1: Sejarah Kelahiran Muhammadiyah": {
+          cp: "Peserta didik memahami latar belakang dan peristiwa berdirinya Muhammadiyah serta teladan pendirinya.",
+          tps: [
+            { tp: "Menjelaskan latar belakang berdirinya Muhammadiyah (kondisi umat Islam awal abad ke-20)", materi: "Kondisi sosial-keagamaan menjelang 1912", jp: 3 },
+            { tp: "Menceritakan peristiwa berdirinya Muhammadiyah pada 18 November 1912", materi: "Kelahiran Muhammadiyah di Kauman Yogyakarta", jp: 3 },
+            { tp: "Meneladani perjuangan KH Ahmad Dahlan", materi: "Biografi dan nilai perjuangan KH Ahmad Dahlan", jp: 4 },
+            { tp: "Memaparkan peran Nyai Ahmad Dahlan (Hajah Walidah) dan Sopo Tresno", materi: "Peran ibu Nyai Walidah dan Sopo Tresno/Aisyiyah awal", jp: 3 }
+          ]
+        },
+        "Bab 2: Kepribadian Muhammadiyah dan Muqaddimah AD": {
+          cp: "Peserta didik memahami Khittah/Kepribadian Muhammadiyah dan isi Muqaddimah Anggaran Dasar Muhammadiyah.",
+          tps: [
+            { tp: "Menjelaskan 10 butir Kepribadian Muhammadiyah", materi: "Kepribadian Muhammadiyah (10 butir)", jp: 4 },
+            { tp: "Menjelaskan pokok pikiran Muqaddimah Anggaran Dasar Muhammadiyah", materi: "Muqaddimah AD: cita-cita hidup umat Islam", jp: 4 },
+            { tp: "Menerapkan nilai kepribadian Muhammadiyah dalam kehidupan sehari-hari", materi: "Amaliah kepribadian di sekolah dan rumah", jp: 3 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 3: Aisyiyah dan Organisasi Otonom I": {
+          cp: "Peserta didik mengenal Aisyiyah dan ortom tingkat keluarga/anak.",
+          tps: [
+            { tp: "Menjelaskan peran Aisyiyah sebagai ortom perempuan Muhammadiyah", materi: "Sejarah dan peran Aisyiyah", jp: 3 },
+            { tp: "Menyebutkan ortom Muhammadiyah (NA, HW, Tapak Suci)", materi: "Ortom keluarga: Nasyiatul Aisyiyah, Hizbul Wathan, Tapak Suci", jp: 3 },
+            { tp: "Merefleksikan peran ortom dalam pembinaan kader", materi: "Fungsi ortom dan kaderisasi", jp: 3 }
+          ]
+        },
+        "Bab 4: Amal Usaha Muhammadiyah di Lingkunganku (Proyek)": {
+          cp: "Peserta didik mampu mengamati dan mempresentasikan Amal Usaha Muhammadiyah di sekitarnya.",
+          tps: [
+            { tp: "Mengidentifikasi jenis-jenis AUM (pendidikan, kesehatan, sosial, ekonomi)", materi: "Amal Usaha Muhammadiyah (AUM)", jp: 3 },
+            { tp: "Melakukan observasi sederhana AUM terdekat", materi: "Proyek observasi AUM di lingkungan sekolah/rumah", jp: 4 },
+            { tp: "Mempresentasikan hasil observasi", materi: "Presentasi hasil observasi", jp: 3 }
+          ]
+        }
+      }
+    },
+    "8": {
+      "1": {
+        "Bab 5: Akhlak dan Adab Pelajar Muhammadiyah": {
+          cp: "Peserta didik memahami dan mengamalkan akhlak serta adab sesuai ajaran Muhammadiyah.",
+          tps: [
+            { tp: "Menjelaskan akhlak terpuji (mahmudah) dan tercela (madzmumah)", materi: "Akhlak mahmudah-madzmumah", jp: 3 },
+            { tp: "Menerapkan adab kepada orang tua dan guru (birrul walidain)", materi: "Adab kepada orang tua, guru, sesama", jp: 4 },
+            { tp: "Membiasakan akhlak mulia dalam kehidupan sekolah", materi: "Pembiasaan akhlak di sekolah", jp: 3 }
+          ]
+        },
+        "Bab 6: Muhammadiyah dari Masa ke Masa dan Muktamar": {
+          cp: "Peserta didik memahami perjalanan Muhammadiyah dari masa ke masa serta permusyawaratan tertingginya.",
+          tps: [
+            { tp: "Menjelaskan Muhammadiyah periode awal hingga prakemerdekaan", materi: "Muhammadiyah masa awal (1912-1945)", jp: 3 },
+            { tp: "Menjelaskan Muhammadiyah masa kemerdekaan hingga era reformasi", materi: "Perjuangan masa ke masa (1945-sekarang)", jp: 3 },
+            { tp: "Menjelaskan fungsi Muktamar sebagai permusyawaratan tertinggi", materi: "Muktamar, Tanfidz, dan pusat-pimpinan Muhammadiyah", jp: 4 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 7: Tajdid dan Islam Berkemajuan": {
+          cp: "Peserta didik memahami semangat tajdid dan gagasan Islam Berkemajuan.",
+          tps: [
+            { tp: "Menjelaskan makna tajdid (pembaruan) dalam Muhammadiyah", materi: "Pengertian tajdid", jp: 3 },
+            { tp: "Menjelaskan pilar-pilar Islam Berkemajuan", materi: "Islam Berkemajuan: beragama yang maju, toleran", jp: 4 },
+            { tp: "Mengaitkan tajdid dengan amal nyata di lingkungan sekitar", materi: "Contoh gerakan pembaruan di masyarakat", jp: 3 }
+          ]
+        },
+        "Bab 8: Ortom II: IPM dan Musyawarah": {
+          cp: "Peserta didik memahami IPM dan lain-lain ortom serta menerapkan musyawarah.",
+          tps: [
+            { tp: "Menjelaskan peran IPM, IMM, dan Pemuda Muhammadiyah", materi: "Ortom pelajar/mahasiswa/pemuda", jp: 3 },
+            { tp: "Melakukan simulasi musyawarah ala Muhammadiyah", materi: "Praktik musyawarah dan pengambilan keputusan", jp: 4 }
+          ]
+        }
+      }
+    },
+    "9": {
+      "1": {
+        "Bab 9: Kesehatan, Sosial, dan Filantropi Muhammadiyah": {
+          cp: "Peserta didik memahami peran Muhammadiyah di bidang kesehatan, sosial, dan filantropi.",
+          tps: [
+            { tp: "Menjelaskan layanan kesehatan Muhammadiyah/Aisyiyah (rumah sakit, PKU)", materi: "AUM kesehatan dan sosial", jp: 3 },
+            { tp: "Menjelaskan konsep filantropi Islam (ZIS) dan LAZISMU", materi: "Zakat-infaq-sedekah, LAZISMU", jp: 3 },
+            { tp: "Merancang aksi sosial sederhana di sekolah", materi: "Proyek filantropi siswa", jp: 4 }
+          ]
+        },
+        "Bab 10: Ukhuwah dan Teologi Al-Ma'un": {
+          cp: "Peserta didik memahami persaudaraan (ukhuwah) dan teologi Al-Ma'un dalam laku toleransi.",
+          tps: [
+            { tp: "Menjelaskan tiga pilar ukhuwah (islamiyah, wathaniyah, basyariyah)", materi: "Ukhuwah islamiyah-wathaniyah-basyariyah", jp: 3 },
+            { tp: "Menganalisis QS. Al-Ma'un sebagai dasar teologi sosial Muhammadiyah", materi: "Teologi Al-Ma'un dan kepedulian sosial", jp: 4 },
+            { tp: "Menampilkan sikap toleransi dalam kehidupan beragama dan bermasyarakat", materi: "Toleransi dan kerukunan umat beragama", jp: 3 }
+          ]
+        }
+      },
+      "2": {
+        "Bab 11: Kepemimpinan dan Dakwah Digital Muhammadiyah": {
+          cp: "Peserta didik memahami kepemimpinan dalam Islam dan dakwah digital ala Muhammadiyah.",
+          tps: [
+            { tp: "Menjelaskan kriteria kepemimpinan dalam Islam dan Muhammadiyah", materi: "Kepemimpinan Islami", jp: 3 },
+            { tp: "Menganalisis dakwah digital dan etika bermedia sosial", materi: "Dakwah digital, etika medsos (tabayun)", jp: 4 }
+          ]
+        },
+        "Bab 12: Kebangsaan dan Proyek Sosial Akhir": {
+          cp: "Peserta didik memahami kontribusi Muhammadiyah bagi bangsa dan melakukan proyek sosial.",
+          tps: [
+            { tp: "Menjelaskan kontribusi Muhammadiyah bagi Indonesia (darul ahdi wa syahadah)", materi: "Kebangsaan Muhammadiyah", jp: 3 },
+            { tp: "Merancang dan melaksanakan proyek sosial kelas", materi: "Proyek sosial: bakti siswa untuk lingkungan", jp: 5 },
+            { tp: "Merefleksikan nilai-nilai Kemuhammadiyahan dari proyek akhir", materi: "Refleksi dan presentasi akhir", jp: 3 }
+          ]
+        }
+      }
+    }
+  }
+});
+
         function autoGenerateSilabus() {
             // Validasi Identitas
             if (!identitas.mapel || !identitas.tapel || !identitas.kelas || !identitas.semester) {
@@ -22962,6 +23368,9 @@
                 if (/\bpjok\b|penjaskes|olahraga|jasmani/.test(n)) return "PJOK (SMP)";
                 if (/\bprakarya\b|\binformatika\b|\btik\b|teknologi\s*informasi|\bkomputer\b/.test(n)) return "Prakarya / Informatika (SMP)";
                 if (/\bbk\b|bimbingan\s*konseling/.test(n)) return "Bimbingan Konseling";
+                if (/bahasa\s*jawa|\bjawa\b/.test(n)) return "Bahasa Jawa (SMP)";
+                if (/bahasa\s*arab|\barab\b/.test(n)) return "Bahasa Arab (SMP)";
+                if (/kemuhammadiyahan|muhammadiyah/.test(n)) return "Kemuhammadiyahan (SMP)";
                 const keys = Object.keys(referensiCP);
                 for (const k of keys) {
                     const clean = k.toLowerCase().replace(/ \(smp\)/g, "");
@@ -23889,6 +24298,18 @@
 
         // Isi default identitas HANYA untuk kolom yang kosong (tidak menimpa pilihan pengguna).
         // tapel diturunkan dari data kaldik bila ada, lalu fallback daftar tapel master.
+
+        /* ==== MIGRASI: Mapel Muatan Lokal (Jawa/Arab/Kemuhammadiyahan) untuk data lama ==== */
+        function ensureMulokMapelMigrated(){
+          try{
+            if(!Array.isArray(masterData.mapel)) masterData.mapel = [];
+            ['Bahasa Jawa','Bahasa Arab','Kemuhammadiyahan'].forEach(function(nama){
+              if(!masterData.mapel.some(function(m){ return String(m&&m.nama||'').toLowerCase()===nama.toLowerCase(); }))
+                masterData.mapel.push({ nama: nama, jjm: 2 });
+            });
+          }catch(e){}
+        }
+
         function ensureIdentitasDefaults() {
             let chg = false;
             if (!identitas.tapel) {
@@ -23974,7 +24395,8 @@
             renderIdentitasForm();
             initMasterTabs();
             updatePrintData();
-                    try { ensureIdentitasDefaults(); } catch (e) { console.warn('ensureIdentitasDefaults:', e); }
+                    try { ensureIdentitasDefaults();
+          ensureMulokMapelMigrated(); } catch (e) { console.warn('ensureIdentitasDefaults:', e); }
         }
 
         // ============================================================================
