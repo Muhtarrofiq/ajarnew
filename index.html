@@ -825,6 +825,87 @@
         .absen-chip.active-s { background: #fee2e2; border-color: #ef4444; color: #b91c1c; font-weight: bold; }
         .absen-chip.active-i { background: #fffbeb; border-color: #f59e0b; color: #b45309; font-weight: bold; }
         .absen-chip.active-a { background: #f3f4f6; border-color: #6b7280; color: #374151; font-weight: bold; }
+
+        /* ================================================================
+           UI POLISH & RESPONSIVE — sidebar menunya rapi, HP jadi off-canvas,
+           tombol/konten menyesuaikan layar kecil (tanpa mengubah tampilan desktop)
+           ================================================================ */
+        /* Sidebar & menu lebih rapi (semua ukuran layar) */
+        aside { min-width: 256px; }
+        aside nav ul { padding: 0 10px; }
+        aside nav button {
+            border-radius: 8px; margin-bottom: 2px;
+            font-size: 13.5px !important; padding: 9px 14px !important;
+            transition: background .15s ease, color .15s ease;
+        }
+        aside nav button:hover { background: #eef2ff; }
+        aside nav button.active-nav { border-right: none; box-shadow: inset 3px 0 0 #4338ca; }
+        aside nav::-webkit-scrollbar { width: 6px; }
+        aside nav::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
+
+        /* Overlay gelap saat sidebar terbuka di HP */
+        #sidebar-overlay {
+            display: none; position: fixed; inset: 0; z-index: 45;
+            background: rgba(17,24,39,.45); -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px);
+        }
+        body.sidebar-mobile-open #sidebar-overlay { display: block; }
+
+        /* Baris kontrol (select dsb.) tidak pernah keluar layar */
+        main section .no-print select, main section .no-print input { max-width: 100%; }
+        main .no-print .flex.items-center.gap-2 { flex-wrap: wrap; }
+
+        /* ================== MOBILE (<= 768px) ================== */
+        @media (max-width: 768px) {
+            /* Sidebar jadi panel melayang (off-canvas) */
+            aside {
+                position: fixed !important; top: 0; left: 0; bottom: 0;
+                width: 262px; max-width: 84vw; z-index: 50;
+                transform: translateX(-105%); transition: transform .25s ease;
+                box-shadow: 0 0 32px rgba(0,0,0,.30);
+            }
+            body.sidebar-mobile-open aside { display: flex !important; transform: translateX(0); }
+            /* Konten: padding hemat + ruang utk tombol hamburger */
+            main { padding: 12px !important; padding-top: 58px !important; padding-bottom: 90px !important; }
+            .p-8 { padding: 16px !important; }
+            .p-6 { padding: 14px !important; }
+            /* Judul hemat tempat */
+            aside h1.text-xl { font-size: 17px !important; }
+            main h2.text-2xl { font-size: 19px !important; }
+            /* Hamburger selalu tampil di HP (kecuali saat sidebar terbuka) */
+            #btn-show-sidebar { display: inline-flex !important; top: 10px; left: 10px; box-shadow: 0 4px 14px rgba(79,70,229,.45); }
+            body.sidebar-mobile-open #btn-show-sidebar { display: none !important; }
+            /* Header section: judul full, baris tombol/select rapi membungkus */
+            main > section > div.no-print { width: 100%; }
+            main > section > div.no-print > div.flex { width: 100%; flex-wrap: wrap; }
+            main > section > div.no-print > div.flex > select,
+            main > section > div.no-print > div.flex > button { flex: 1 1 auto; min-width: 44%; }
+            /* Grid form melebar penuh di layar sempit ekstra */
+            .grid.lg\:grid-cols-4 { gap: 10px; }
+        }
+        /* ================== LAYAR SANGAT KECIL (<= 420px) ================== */
+        @media (max-width: 420px) {
+            main > section > div.no-print > div.flex > select,
+            main > section > div.no-print > div.flex > button { min-width: 100%; }
+        }
+
+        /* ===== ANALISIS ALOKASI WAKTU: cetak rapi & fix input ikut tercetak ===== */
+        @media print {
+            .no-print-input { display: none !important; }      /* FIX: input analisis/KKTP sempat ikut tercetak */
+            #print-analisis .aaw-scroll { overflow: visible !important; }
+            #print-analisis table { min-width: 0 !important; }
+            #print-analisis h4 { font-size: 13px !important; margin-bottom: 6px !important; }
+            #print-analisis table { font-size: 11.5px !important; }
+            #print-analisis th, #print-analisis td { padding: 4px 6px !important; }
+            #print-analisis .bg-gray-50 { background: #fff !important; }
+            #print-analisis .mb-8 { margin-bottom: 14px !important; }
+            #print-analisis .signature-block { margin-top: 24px !important; page-break-inside: avoid; }
+        }
+
+        /* HP: kartu analisis lebih ringkas */
+        @media (max-width: 768px) {
+            #analisis .aaw-scroll { margin: 0 -4px; padding: 0 4px; }
+            #analisis td, #analisis th { padding: 6px 5px; }
+        }
     </style>
 </head>
 <body class="bg-gray-50 h-screen flex overflow-hidden">
@@ -947,6 +1028,8 @@
             </div>
         </div>
     </aside>
+    <!-- Overlay gelap di belakang sidebar saat mode HP -->
+    <div id="sidebar-overlay" class="no-print" onclick="document.body.classList.remove('sidebar-mobile-open')"></div>
 
     <!-- Tombol apung: tampilkan kembali sidebar saat tersembunyi -->
     <button id="btn-show-sidebar" onclick="toggleSidebar()" title="Tampilkan sidebar" aria-label="Tampilkan sidebar"
@@ -1977,9 +2060,9 @@
 
         <!-- Analisis Alokasi Waktu Section -->
         <section id="analisis" class="space-y-6 hide">
-            <div class="flex justify-between items-center no-print">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-3 no-print">
                 <h2 class="text-2xl font-bold text-gray-800">Analisis Alokasi Waktu</h2>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
                     <button onclick="calculateAnalisisWeeks()" class="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 text-sm font-medium" title="Isi otomatis semua baris dari data Kalender Akademik">
                         <i class="fas fa-sync-alt mr-1"></i> Isi Otomatis dari Kalender
                     </button>
@@ -2030,7 +2113,8 @@
                         <span class="text-xs text-gray-500 w-full">Kolom <b>Keterangan (Libur/Kegiatan)</b> otomatis terisi dari Kalender Akademik. Klik <i class="fas fa-sync-alt"></i> di tiap baris untuk menyegarkan.</span>
                     </div>
 
-                    <table class="w-full text-sm border-collapse border border-gray-400 mb-4">
+                    <div class="overflow-x-auto aaw-scroll">
+                    <table class="w-full min-w-[680px] text-sm border-collapse border border-gray-400 mb-4">
                         <thead class="bg-gray-100 text-center font-bold">
                             <tr>
                                 <th class="border border-gray-400 p-2 w-10">No</th>
@@ -2054,6 +2138,7 @@
                             </tr>
                         </tfoot>
                     </table>
+                    </div>
 
                     <div class="bg-gray-50 p-4 border border-gray-200 rounded text-sm space-y-2">
                         <p class="font-bold">Perhitungan:</p>
@@ -2075,7 +2160,8 @@
                             </button>
                         </div>
                     </div>
-                    <table class="w-full text-sm border-collapse border border-gray-400">
+                    <div class="overflow-x-auto aaw-scroll">
+                    <table class="w-full min-w-[420px] text-sm border-collapse border border-gray-400">
                         <thead class="bg-gray-100 text-center font-bold">
                             <tr>
                                 <th class="border border-gray-400 p-2 w-10">No</th>
@@ -2097,10 +2183,11 @@
                             </tr>
                         </tfoot>
                     </table>
+                    </div>
                 </div>
 
                 <!-- Signatures -->
-                <div class="mt-12 hidden print-area">
+                <div class="mt-8 hidden print-area signature-block">
                     <div class="flex justify-between text-center text-sm">
                         <div>
                             <p>Mengetahui,</p>
@@ -4490,6 +4577,9 @@
             }
             target.classList.remove('hide');
 
+            // Di HP: tutup sidebar otomatis setelah menu dipilih
+            if (window.innerWidth <= 768) document.body.classList.remove('sidebar-mobile-open');
+
             document.querySelectorAll('aside nav button').forEach(btn => btn.classList.remove('active-nav'));
             const navBtn = document.getElementById('nav-' + sectionId);
             if (navBtn) navBtn.classList.add('active-nav');
@@ -4546,6 +4636,11 @@
 
         // Sidebar: sembunyikan / tampilkan (preferensi disimpan di localStorage)
         function toggleSidebar() {
+            // Di HP: sidebar bekerja sebagai panel off-canvas (bukan hide permanen)
+            if (window.innerWidth <= 768) {
+                document.body.classList.toggle('sidebar-mobile-open');
+                return;
+            }
             const hidden = document.body.classList.toggle('sidebar-hidden');
             try { localStorage.setItem('perangkatAjarSidebarHidden', hidden ? '1' : '0'); } catch (e) {}
         }
