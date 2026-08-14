@@ -1788,7 +1788,7 @@
                                 <i class="fas fa-scroll text-indigo-600"></i>
                                 Capaian Pembelajaran (CP)
                             </p>
-                            <p class="text-xs text-indigo-700 mt-0.5">Berdasarkan <em>Permendikdasmen No. 46 Tahun 2025</em> &mdash; Fase D (SMP/MTs)</p>
+                            <p class="text-xs text-indigo-700 mt-0.5">Berbasis kerangka CP terbaru: <em>Permendikdasmen No. 46 Tahun 2025</em> &amp; referensi <em>Muatan Lokal</em> &mdash; Fase D (SMP/MTs)</p>
                         </div>
                         <span id="cp-permendik-mapel-badge" class="text-xs bg-indigo-600 text-white px-2 py-1 rounded-full font-semibold">Belum dimuat</span>
                     </div>
@@ -4075,6 +4075,7 @@
             'Prakarya dan Informatika',
             'Bimbingan dan Konseling (BK)',
             'Bahasa Jawa',
+            'Bahasa Daerah Jawa Timur',
             'Bahasa Arab',
             'Kemuhammadiyahan'
         ];
@@ -4115,7 +4116,7 @@
             if (/koding|coding|kecerdasan\s*artifisial|artificial|\bai\b/.test(n)) return 'Koding dan Kecerdasan Artifisial';
             if (/\binformatika\b|\btik\b|teknologi\s*informasi|\bkomputer\b|prakarya/.test(n)) return 'Informatika';
             if (/seni|\bsbk\b|budaya/.test(n)) return 'Seni dan Budaya';
-            if (/muatan\s*lokal|\bmulok\b|\bbahasa\s*(jawa|sunda|daerah|bali|madura|arab)\b|kemuhammadiyahan/.test(n)) return 'Muatan Lokal';
+            if (/muatan\s*lokal|\bmulok\b|\bbahasa\s*(jawa|sunda|daerah|bali|madura|arab)\b|jawa\s*timur|\bjatim\b|kemuhammadiyahan/.test(n)) return 'Muatan Lokal';
             if (/\bbk\b|bimbingan/.test(n)) return 'Bimbingan dan Konseling';
             return null;
         }
@@ -5567,7 +5568,7 @@
             if (/\bpjok\b|penjaskes|olahraga|jasmani/.test(n)) return "PJOK (SMP)";
             if (/\bprakarya\b|\binformatika\b|\btik\b|teknologi\s*informasi|\bkomputer\b/.test(n)) return "Prakarya / Informatika (SMP)";
             if (/\bbk\b|bimbingan\s*konseling/.test(n)) return "Bimbingan Konseling";
-            if (/bahasa\s*jawa|\bjawa\b/.test(n)) return "Bahasa Jawa (SMP)";
+            if (/bahasa\s*jawa|\bjawa\b|bahasa\s*daerah|jawa\s*timur|\bjatim\b|\bdaerah\b/.test(n)) return "Bahasa Jawa (SMP)";
             if (/bahasa\s*arab|\barab\b/.test(n)) return "Bahasa Arab (SMP)";
             if (/kemuhammadiyahan|muhammadiyah/.test(n)) return "Kemuhammadiyahan (SMP)";
             return Object.keys(CP_MAPEL_SMP_2025).find(k => n.includes(k.toLowerCase().replace(" (smp)",""))) || null;
@@ -5602,7 +5603,11 @@
                 html += '<li><span class="font-semibold">' + el + ':</span> ' + cp.elemen[el] + '</li>';
             });
             html += '</ul>';
-            html += '<p class="mt-3 text-xs text-indigo-700 italic">Sumber: Permendikdasmen No. 46 Tahun 2025 tentang Capaian Pembelajaran (Fase D \u2013 SMP/MTs)</p>';
+            const _mulokKeys = ["Bahasa Jawa (SMP)","Bahasa Arab (SMP)","Kemuhammadiyahan (SMP)"];
+            const _sumberCP = (_mulokKeys.indexOf(mapelKey) !== -1)
+                ? "Sumber: Referensi CP Muatan Lokal \u2014 selaras Kurikulum Merdeka (rujukan: Keputusan Kepala BSKAP No. 032/H/KR/2024 & panduan muatan lokal daerah/majelis). Sesuaikan dengan panduan dinas/majelis setempat."
+                : "Sumber: Permendikdasmen No. 46 Tahun 2025 tentang Capaian Pembelajaran (Fase D \u2013 SMP/MTs)";
+            html += '<p class="mt-3 text-xs text-indigo-700 italic">' + _sumberCP + '</p>';
             isiScreen.innerHTML = html;
 
             // Print content
@@ -23368,7 +23373,7 @@ Object.assign(referensiCP, {
                 if (/\bpjok\b|penjaskes|olahraga|jasmani/.test(n)) return "PJOK (SMP)";
                 if (/\bprakarya\b|\binformatika\b|\btik\b|teknologi\s*informasi|\bkomputer\b/.test(n)) return "Prakarya / Informatika (SMP)";
                 if (/\bbk\b|bimbingan\s*konseling/.test(n)) return "Bimbingan Konseling";
-                if (/bahasa\s*jawa|\bjawa\b/.test(n)) return "Bahasa Jawa (SMP)";
+                if (/bahasa\s*jawa|\bjawa\b|bahasa\s*daerah|jawa\s*timur|\bjatim\b|\bdaerah\b/.test(n)) return "Bahasa Jawa (SMP)";
                 if (/bahasa\s*arab|\barab\b/.test(n)) return "Bahasa Arab (SMP)";
                 if (/kemuhammadiyahan|muhammadiyah/.test(n)) return "Kemuhammadiyahan (SMP)";
                 const keys = Object.keys(referensiCP);
@@ -23440,6 +23445,8 @@ Object.assign(referensiCP, {
             }
 
             identitas._cpMapelKey = mapelKey;
+            const _mulokRef = ["Bahasa Jawa (SMP)","Bahasa Arab (SMP)","Kemuhammadiyahan (SMP)"].indexOf(mapelKey) !== -1;
+            const _sumberLabel = _mulokRef ? "referensi CP Muatan Lokal terbaru (selaras Kurikulum Merdeka & panduan daerah/majelis setempat)" : "Permendikdasmen No. 46 Tahun 2025 (Fase D)";
             const mapelLabel = (CP_MAPEL_SMP_2025[mapelKey] && CP_MAPEL_SMP_2025[mapelKey].nama) ? CP_MAPEL_SMP_2025[mapelKey].nama : identitas.mapel;
 
             if (!confirm("Apakah Anda yakin ingin men-generate data ATP untuk:\n\n" +
@@ -23447,7 +23454,7 @@ Object.assign(referensiCP, {
                          "  \u2022 Kelas     : " + identitas.kelas + " (Kelas " + kelasKey + ")\n" +
                          "  \u2022 Semester  : " + identitas.semester + " (Semester " + semesterKey + ")\n" +
                          "  \u2022 Tahun     : " + identitas.tapel + "\n\n" +
-                         "Data sesuai Permendikdasmen No. 46 Tahun 2025 (Fase D) akan ditambahkan ke tabel.")) {
+                         "Data sesuai " + _sumberLabel + " akan ditambahkan ke tabel.")) {
                 return;
             }
 
@@ -23499,7 +23506,7 @@ Object.assign(referensiCP, {
             renderAsesmen();
             alert("Berhasil menambahkan " + count + " Tujuan Pembelajaran (total " + totalJp + " JP) untuk:\n" +
                   mapelLabel + " \u2013 Kelas " + identitas.kelas + " \u2013 Semester " + identitas.semester + "\n\n" +
-                  "Materi & TP disusun sesuai Permendikdasmen No. 46 Tahun 2025 (Fase D SMP/MTs).\nDeskripsi CP tampil di atas tabel.");
+                  "Materi & TP disusun sesuai " + _sumberLabel + ".\nDeskripsi CP tampil di atas tabel.");
         }
 
 
@@ -24303,7 +24310,7 @@ Object.assign(referensiCP, {
         function ensureMulokMapelMigrated(){
           try{
             if(!Array.isArray(masterData.mapel)) masterData.mapel = [];
-            ['Bahasa Jawa','Bahasa Arab','Kemuhammadiyahan'].forEach(function(nama){
+            ['Bahasa Jawa','Bahasa Daerah Jawa Timur','Bahasa Arab','Kemuhammadiyahan'].forEach(function(nama){
               if(!masterData.mapel.some(function(m){ return String(m&&m.nama||'').toLowerCase()===nama.toLowerCase(); }))
                 masterData.mapel.push({ nama: nama, jjm: 2 });
             });
