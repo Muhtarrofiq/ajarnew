@@ -66,6 +66,7 @@
 
             .no-print { display: none !important; }
             #sync-toast { display: none !important; }
+            #btn-show-sidebar { display: none !important; }
             .print-area { display: block !important; }
 
             /* === PROTA: rapikan hasil cetak (portrait / landscape) === */
@@ -3737,6 +3738,9 @@
                     <button onclick="exportBukuToXlsx()" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium" title="Export daftar buku ke Excel">
                         <i class="fas fa-file-export mr-1"></i> Export
                     </button>
+                    <button onclick="generateBukuKurikulumMerdeka()" class="bg-violet-600 text-white px-3 py-2 rounded-lg hover:bg-violet-700 transition-colors text-sm font-medium" title="Isi otomatis daftar Buku Guru & Siswa dengan buku teks Kurikulum Merdeka (Kemendikdasmen) sesuai Mapel & Kelas pada filter">
+                        <i class="fas fa-wand-magic-sparkles mr-1"></i> Generate Buku Kurikulum Merdeka
+                    </button>
                 </div>
             </div>
 
@@ -6318,6 +6322,101 @@
             };
             reader.readAsArrayBuffer(file);
         }
+        // ============ GENERATE DAFTAR BUKU KURIKULUM MERDEKA (KEMENDIKDASMEN) ============
+        // Isi otomatis Buku Pegangan Guru & Siswa dengan buku teks resmi
+        // Kurikulum Merdeka (BSE Kemendikdasmen) + referensi, sesuai Mapel & Kelas.
+        function bukuKmJenjang(kelas) {
+            const k = String(kelas || '').trim().toUpperCase();
+            if (['X', 'XI', 'XII'].indexOf(k) >= 0) return { j: 'SMA/SMK', fase: (k === 'X' ? 'E' : 'F') };
+            if (['VII', 'VIII', 'IX', '7', '8', '9'].indexOf(k) >= 0) return { j: 'SMP/MTs', fase: 'D' };
+            return { j: 'SD/MI', fase: ({ '1': 'A', '2': 'A', '3': 'B', '4': 'B', '5': 'C', '6': 'C' })[k] || 'C' };
+        }
+
+        function katalogBukuKurikulumMerdeka(mapel, kelas) {
+            const M = String(mapel || '').toUpperCase();
+            const K = String(kelas || '').trim().toUpperCase();
+            const jen = bukuKmJenjang(kelas);
+            const guru = [], siswa = [];
+            const push = (arr, judul, pengarang, penerbit, tahun, sumber, ket) =>
+                arr.push({ judul, pengarang, penerbit, tahun, sumber, ket });
+
+            const P_BSE = 'Pusat Kurikulum & Pembelajaran, Kemendikdasmen';
+            const S_BSE = 'Buku Sekolah Elektronik (buku.kemdikbud.go.id)';
+            const A_BSE = 'Tim Penulis BSE Kemendikdasmen';
+
+            // Peta mapel umum -> nama buku teks resmi Kurikulum Merdeka
+            let base = '';
+            if (/BAHASA\s*INDONESIA/.test(M)) base = 'Bahasa Indonesia';
+            else if (/BAHASA\s*INGGRIS/.test(M)) base = (jen.j === 'SMP/MTs') ? 'English for Nusantara' : 'Bahasa Inggris';
+            else if (/MATEMATIKA/.test(M)) base = 'Matematika';
+            else if (/\bIPAS\b|\bIPA\b|ILMU PENGETAHUAN ALAM/.test(M)) base = (jen.j === 'SD/MI') ? 'Ilmu Pengetahuan Alam dan Sosial' : 'Ilmu Pengetahuan Alam';
+            else if (/\bIPS\b|ILMU PENGETAHUAN SOSIAL/.test(M)) base = 'Ilmu Pengetahuan Sosial';
+            else if (/PPKN|PANCASILA/.test(M)) base = 'Pendidikan Pancasila';
+            else if (/SEJARAH/.test(M)) base = 'Sejarah';
+            else if (/INFORMATIKA/.test(M)) base = 'Informatika';
+            else if (/PJOK|PENJAS|OLAHRAGA/.test(M)) base = 'Pendidikan Jasmani, Olahraga, dan Kesehatan';
+            else if (/SENI/.test(M)) base = 'Seni Budaya';
+            else if (/AGAMA ISLAM|\bPAI\b/.test(M)) base = 'Pendidikan Agama Islam dan Budi Pekerti';
+
+            if (/PAJAK|PERPAJAKAN/.test(M)) {
+                // Buku kejuruan Perpajakan (Fase F) yang beredar untuk Kurikulum Merdeka
+                push(siswa, 'Perpajakan Fase F - Konsentrasi Keahlian Akuntansi untuk SMK/MAK Kelas XI (Kurikulum Merdeka)', 'Dwi Harti', 'Erlangga', '2023', 'Katalog penerbit (K-Merdeka)', 'Buku siswa');
+                push(siswa, 'Administrasi Pajak SMK/MAK Kelas ' + (K === 'XII' ? 'XII' : 'XI'), (K === 'XII' ? 'Sri Hartati' : 'Agus Mulyono'), 'Penerbit Andi', '2021', 'Katalog perpustakaan (K-Merdeka)', 'Buku siswa');
+                push(guru, 'Administrasi Pajak SMK/MAK Kelas ' + (K === 'XII' ? 'XII' : 'XI'), (K === 'XII' ? 'Sri Hartati' : 'Binti Chomsiatin'), 'Penerbit Andi', '2021', 'Katalog perpustakaan (K-Merdeka)', 'Buku pegangan guru');
+                push(guru, 'Peraturan Perpajakan Terbaru (UU KUP, UU PPh, UU PPN & aturan pelaksanaannya)', 'Direktorat Jenderal Pajak', 'Kemenkeu RI', '2025', 'pajak.go.id', 'Referensi guru');
+            } else if (base) {
+                push(siswa, base + ' untuk ' + jen.j + ' Kelas ' + K + ' - Kurikulum Merdeka', A_BSE, P_BSE, '2023', S_BSE, 'Buku siswa');
+                if (jen.j === 'SD/MI' && /MATEMATIKA/.test(M)) {
+                    push(siswa, base + ' untuk ' + jen.j + ' Kelas ' + K + ' Vol. 2 - Kurikulum Merdeka', A_BSE, P_BSE, '2023', S_BSE, 'Buku siswa');
+                }
+                push(guru, 'Buku Guru ' + base + ' untuk ' + jen.j + ' Kelas ' + K + ' - Kurikulum Merdeka', A_BSE, P_BSE, '2023', S_BSE, 'Buku panduan guru');
+            } else {
+                // Mapel belum dipetakan: pola generik Kurikulum Merdeka
+                push(siswa, 'Buku Siswa ' + M + ' Kelas ' + K + ' - Kurikulum Merdeka', A_BSE, P_BSE, '2024', S_BSE, 'Buku siswa');
+                push(guru, 'Buku Guru ' + M + ' Kelas ' + K + ' - Kurikulum Merdeka', A_BSE, P_BSE, '2024', S_BSE, 'Buku panduan guru');
+            }
+
+            // Referensi Kurikulum Merdeka (wajib dimiliki guru)
+            push(guru, 'Panduan Pembelajaran dan Asesmen Pendidikan Dasar dan Menengah', 'Badan Standar, Kurikulum, dan Asesmen Pendidikan', 'Kemendikbudristek', '2022', 'kurikulum.kemdikbud.go.id', 'Referensi guru');
+            push(guru, 'Capaian Pembelajaran (CP) Kurikulum Merdeka - Edisi Terbaru', 'BSKAP Kemendikdasmen', 'Kemendikdasmen RI', '2025', 'kemendikdasmen.go.id', 'Referensi guru');
+
+            return { guru, siswa };
+        }
+
+        function generateBukuKurikulumMerdeka() {
+            const f = (typeof getBukuFilter === 'function') ? getBukuFilter() : { semua: true };
+            const tapel = f.semua ? (identitas.tapel || '') : (f.tapel || identitas.tapel || '');
+            const semester = f.semua ? (identitas.semester || '') : (f.semester || identitas.semester || '');
+            const kelas = f.semua ? (identitas.kelas || '') : (f.kelas || identitas.kelas || '');
+            const mapel = f.semua ? (identitas.mapel || '') : (f.mapel || identitas.mapel || '');
+            if (!mapel || !kelas) {
+                alert('Lengkapi dulu filter Kelas & Mata Pelajaran (atau Identitas Sekolah) sebelum generate.');
+                return;
+            }
+
+            const kat = katalogBukuKurikulumMerdeka(mapel, kelas);
+            if (!confirm(
+                'Generate otomatis daftar buku Kurikulum Merdeka (Kemendikdasmen) untuk:\n\n' +
+                '  Mapel : ' + mapel + '\n  Kelas : ' + kelas + '\n  TA    : ' + tapel + ' / Semester ' + semester + '\n\n' +
+                kat.guru.length + ' entri Buku Guru dan ' + kat.siswa.length + ' entri Buku Siswa akan ditambahkan (judul duplikat dilewati). Lanjutkan?'
+            )) return;
+
+            const ada = (jenis, judul) => (dataBuku || []).some(b =>
+                b.jenis === jenis && String(b.judul || '').toLowerCase() === String(judul).toLowerCase() && b.mapel === mapel && b.kelas === kelas);
+            const mkId = () => Date.now().toString() + Math.random().toString(36).slice(2, 6);
+            let nG = 0, nS = 0;
+            kat.guru.forEach(b => {
+                if (!ada('guru', b.judul)) { dataBuku.push(Object.assign({ id: mkId(), jenis: 'guru', tapel, semester, kelas, mapel }, b)); nG++; }
+            });
+            kat.siswa.forEach(b => {
+                if (!ada('siswa', b.judul)) { dataBuku.push(Object.assign({ id: mkId(), jenis: 'siswa', tapel, semester, kelas, mapel }, b)); nS++; }
+            });
+
+            saveDataLocally();
+            renderBuku();
+            if (typeof toastSync === 'function') toastSync('Generate Kurikulum Merdeka: +' + nG + ' buku guru, +' + nS + ' buku siswa (duplikat dilewati).');
+        }
+
         // ======================= END DAFTAR BUKU =======================
 
         function renderIdentitasForm() {
@@ -33244,5 +33343,5 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cced05add8e8df',t:'MTc4NDMyOTg4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a244f7ddad0dfcf8',t:'MTc4NTU4ODYyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a245e0493a20cdd1',t:'MTc4NTU5ODE0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24adefddb4070ac',t:'MTc4NTY1MDUxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a255398f3c5ea2a7',t:'MTc4NTc1OTA4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a255c1703d3e9e4a',t:'MTc4NTc2NDY1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a25bbfda9ab6ea7d',t:'MTc4NTgyNzUwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a26960391b5dea81',t:'MTc4NTk3MDM4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29f97551ca7577a',t:'MTc4NjUzODg3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39352e53c6dea7d',t:'MTc4OTA5NDU5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29f97551ca7577a',t:'MTc4NjUzODg3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
