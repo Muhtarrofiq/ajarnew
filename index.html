@@ -131,6 +131,16 @@
             #print-kktp textarea, #print-kktp input { display: none !important; }
             #print-kktp .kktp-row-rekap td { font-weight: bold !important; }
 
+            /* ===== KKTP PORTRAIT / TEGAK: rapikan agar muat F4 215 x 330 mm ===== */
+            body.kktp-portrait #print-kktp { padding: 0 !important; }
+            body.kktp-portrait #print-kktp table { font-size: 7.5pt !important; }
+            body.kktp-portrait #print-kktp th,
+            body.kktp-portrait #print-kktp td { padding: 2px 3px !important; word-break: break-word; }
+            body.kktp-portrait #print-kktp .kktp-col-desc { width: 38mm !important; }
+            body.kktp-portrait #print-kktp th.w-24 { width: 15mm !important; }
+            body.kktp-portrait #print-kktp th.w-14 { width: 8mm !important; }
+            body.kktp-portrait #print-kktp .no-border-table td { font-size: 9pt !important; }
+
             /* ---- MODE ANGKA: sembunyikan deskripsi, sisakan angka saja ---- */
             body.kktp-print-angka #print-kktp .kktp-desc-print { display: none !important; }
             body.kktp-print-angka #print-kktp .kktp-rubrik-print { display: none !important; }
@@ -2047,6 +2057,11 @@
                         <input type="checkbox" id="kktp-mode-angka" onchange="setKktpModeAngka(this.checked)" class="rounded">
                         <span>Cetak Mode Angka</span>
                     </label>
+                    <select id="kktp-orientasi" onchange="setKktpOrientasi(this.value)" title="Arah kertas untuk cetak KKTP"
+                            class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white shadow-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="landscape">Mendatar / Landscape (F4 330 × 215 mm)</option>
+                        <option value="portrait">Tegak / Portrait (F4 215 × 330 mm)</option>
+                    </select>
                     <button onclick="printKktp()" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
                         <i class="fas fa-print mr-2"></i> Cetak KKTP
                     </button>
@@ -4728,8 +4743,9 @@
             // Pulihkan tab Data Master & tab Kalender (Versi A/B)
             if (typeof initMasterTabs === 'function') initMasterTabs();
             if (typeof initKaldikTab === 'function') initKaldikTab();
-            // Pulihkan pilihan arah kertas cetak Prota
+            // Pulihkan pilihan arah kertas cetak Prota & KKTP
             if (typeof initProtaOrientasi === 'function') initProtaOrientasi();
+            if (typeof initKktpOrientasi === 'function') initKktpOrientasi();
         });
 
         // ========== ROLE & LOGIN LOGIC (FIX: Guru hanya akses mapel dari penugasan Admin) ==========
@@ -5020,7 +5036,7 @@
             if (sectionId === 'silabus') renderIdentitasSummary();
             if (sectionId === 'kaldik') renderKaldik();
             if (sectionId === 'analisis') renderAnalisis();
-            if (sectionId === 'kktp') renderKktp();
+            if (sectionId === 'kktp') { initKktpOrientasi(); renderKktp(); }
             if (sectionId === 'jurnal') {
                 const jrnMpl = document.getElementById('jurnal-filter-mapel');
                 const jrnKls = document.getElementById('jurnal-filter-kelas');
@@ -25221,7 +25237,8 @@ Object.assign(referensiCP, {
         }
 
         function toggleLessonCell(cell, key, weekIdx) {
-            if (!isAdmin()) return;
+            // Admin DAN Guru (yang sedang login) boleh mengedit centang pekan Prosem
+            if (!getSession()) return;
             const uniqueSuffix = `_${identitas.tapel?.replace(/\W/g,'') || ''}_${identitas.semester || ''}`;
             for (let e = 0; e < 3; e++) {
                 const evtKey = `evt_${e}_w_${weekIdx}${uniqueSuffix}`;
@@ -27950,15 +27967,36 @@ Object.assign(referensiCP, {
             document.body.classList.toggle('kktp-print-angka', aktif);
         }
 
+        /* ---- Orientasi cetak KKTP: landscape (bawaan) / portrait, tersimpan otomatis ---- */
+        function getKktpOrientasi() {
+            let v = 'landscape';
+            try { v = localStorage.getItem('perangkatAjarKktpOrientasi') || 'landscape'; } catch (e) {}
+            return (v === 'portrait') ? 'portrait' : 'landscape';
+        }
+
+        function setKktpOrientasi(v) {
+            const val = (v === 'portrait') ? 'portrait' : 'landscape';
+            try { localStorage.setItem('perangkatAjarKktpOrientasi', val); } catch (e) {}
+            document.body.classList.toggle('kktp-portrait', val === 'portrait');
+            const sel = document.getElementById('kktp-orientasi');
+            if (sel && sel.value !== val) sel.value = val;
+        }
+
+        function initKktpOrientasi() {
+            setKktpOrientasi(getKktpOrientasi());
+        }
+
         function printKktp() {
             terapkanKktpModeAngka();
+            const orientasi = getKktpOrientasi();
+            setKktpOrientasi(orientasi);
             document.body.classList.add('print-focus-kktp');
             const cleanup = () => {
                 document.body.classList.remove('print-focus-kktp');
                 window.removeEventListener('afterprint', cleanup);
             };
             window.addEventListener('afterprint', cleanup);
-            printArea('print-kktp');
+            printArea('print-kktp', orientasi);
         }
 
         function acakAngka(min, max) {
@@ -33206,5 +33244,5 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cced05add8e8df',t:'MTc4NDMyOTg4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a244f7ddad0dfcf8',t:'MTc4NTU4ODYyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a245e0493a20cdd1',t:'MTc4NTU5ODE0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24adefddb4070ac',t:'MTc4NTY1MDUxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a255398f3c5ea2a7',t:'MTc4NTc1OTA4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a255c1703d3e9e4a',t:'MTc4NTc2NDY1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a25bbfda9ab6ea7d',t:'MTc4NTgyNzUwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a26960391b5dea81',t:'MTc4NTk3MDM4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29f97551ca7577a',t:'MTc4NjUzODg3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29f97551ca7577a',t:'MTc4NjUzODg3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a39352e53c6dea7d',t:'MTc4OTA5NDU5NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
