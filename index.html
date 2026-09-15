@@ -2960,10 +2960,10 @@
 
         <!-- Perangkat Asesmen Section -->
         <section id="asesmen" class="space-y-6 hide">
-            <div class="flex justify-between items-center no-print">
+            <div class="flex flex-wrap justify-between items-center gap-3 no-print">
                 <h2 class="text-2xl font-bold text-gray-800">Perangkat Asesmen & Penilaian</h2>
-                <div class="flex gap-2">
-                    <button onclick="switchAsesmenTab('rencana')" id="btn-tab-rencana" class="bg-indigo-600 text-white px-4 py-2 rounded-l-lg text-sm font-medium transition-colors border-r-0">
+                <div class="flex flex-wrap gap-0">
+                    <button onclick="switchAsesmenTab('rencana')" id="btn-tab-rencana" class="bg-indigo-600 text-white px-4 py-2 rounded-l-lg text-sm font-medium transition-colors border">
                         <i class="fas fa-clipboard-list mr-2"></i> Rencana & Kisi-kisi
                     </button>
                     <button onclick="switchAsesmenTab('nilai')" id="btn-tab-nilai" class="bg-white text-gray-600 border border-l-0 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors">
@@ -2971,6 +2971,9 @@
                     </button>
                     <button onclick="switchAsesmenTab('rekap')" id="btn-tab-rekap" class="bg-white text-gray-600 border border-l-0 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors">
                         <i class="fas fa-table mr-2"></i> Rekapitulasi (Leger)
+                    </button>
+                    <button onclick="switchAsesmenTab('analisis')" id="btn-tab-analisis" class="bg-white text-gray-600 border border-l-0 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-chart-line mr-2"></i> Analisis Ketercapaian
                     </button>
                     <button onclick="switchAsesmenTab('remedial')" id="btn-tab-remedial" class="bg-white text-gray-600 border border-l-0 px-4 py-2 rounded-r-lg text-sm font-medium hover:bg-gray-50 transition-colors">
                         <i class="fas fa-notes-medical mr-2"></i> Remedial &amp; Pengayaan
@@ -3262,9 +3265,288 @@
                     </div>
                  </div>
             </div>
-        
 
-<!-- ==================== TAB 4: PROGRAM REMEDIAL & PENGAYAAN (MATCHING IMAGE) ==================== -->
+            <!-- ==================== TAB 3.5: ANALISIS KETERCAPAIAN TARGET BELAJAR ==================== -->
+            <div id="asesmen-analisis-view" class="space-y-6 hidden">
+                <div class="flex flex-wrap justify-between items-center gap-3 no-print">
+                    <div>
+                        <h3 class="font-bold text-gray-800 text-lg">Analisis Ketercapaian Target Belajar</h3>
+                        <p class="text-xs text-gray-500 mt-1">Otomatis terintegrasi dengan filter Kelas & Mapel di atas. Tersedia analisis per kelas dan per siswa.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="flex items-center gap-2 bg-white border rounded-lg px-3 py-1.5">
+                            <label class="text-[10px] font-bold text-gray-500 uppercase">KKTP Min</label>
+                            <input type="number" id="analisis-kktp-min" value="70" min="0" max="100" class="w-16 border rounded px-2 py-1 text-sm font-bold text-indigo-700" onchange="renderAsesmenAnalisis()" oninput="renderAsesmenAnalisis()" />
+                        </div>
+                        <button onclick="printActiveAnalisis()" class="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-900 transition-colors text-sm font-medium">
+                            <i class="fas fa-print mr-2"></i> Cetak Analisis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sub Tabs: Kelas vs Per Siswa -->
+                <div class="flex gap-0 no-print bg-white rounded-xl border border-gray-200 p-1 w-fit shadow-sm">
+                    <button onclick="switchAnalisisSubTab('kelas')" id="btn-analisis-sub-kelas" class="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 text-white transition-colors">
+                        <i class="fas fa-users mr-2"></i> Analisis Kelas
+                    </button>
+                    <button onclick="switchAnalisisSubTab('perSiswa')" id="btn-analisis-sub-persiswa" class="px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-user-graduate mr-2"></i> Analisis Per Siswa
+                    </button>
+                </div>
+
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 no-print" id="analisis-stat-cards">
+                    <!-- JS -->
+                </div>
+
+                <!-- SUB VIEW: KELAS -->
+                <div id="analisis-sub-kelas-view" class="space-y-6">
+                <div id="print-analisis-ketercapaian" class="bg-white p-8 rounded-xl shadow-sm border border-gray-200 content-card">
+                    <div class="hidden print-area mb-6">
+                        <div class="text-center border-b-2 border-black pb-4 mb-4">
+                            <h3 class="text-2xl font-bold uppercase">ANALISIS KETERCAPAIAN TARGET BELAJAR</h3>
+                            <p class="font-bold text-lg uppercase mt-1 print-sekolah">NAMA SEKOLAH</p>
+                        </div>
+                        <table class="w-full text-sm font-medium no-border-table mb-4">
+                             <tr>
+                                <td style="width: 150px; border: none !important;">Mata Pelajaran</td>
+                                <td style="width: 10px; border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-mapel">...</td>
+                                <td style="width: 150px; border: none !important;">Kelas / Fase</td>
+                                <td style="width: 10px; border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-kelas-only">...</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none !important;">Tahun Ajaran</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-tapel">...</td>
+                                <td style="border: none !important;">Semester</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-semester">...</td>
+                            </tr>
+                            <tr>
+                                <td style="border: none !important;">KKTP Minimum</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;"><span id="print-analisis-kktp">70</span></td>
+                                <td style="border: none !important;">Tanggal Cetak</td>
+                                <td style="border: none !important;">:</td>
+                                <td style="border: none !important;" class="print-lokasi-tanggal">...</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm border-collapse border border-gray-600">
+                            <thead class="bg-indigo-50">
+                                <tr class="text-[11px] font-extrabold uppercase text-gray-700">
+                                    <th class="border border-gray-600 p-3 text-left w-[18%]">Parameter Analisis</th>
+                                    <th class="border border-gray-600 p-3 text-left w-[18%]">Hasil Data</th>
+                                    <th class="border border-gray-600 p-3 text-left w-[32%]">Catatan / Faktor Penyebab</th>
+                                    <th class="border border-gray-600 p-3 text-left w-[32%]">Tindak Lanjut / Solusi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="analisis-ketercapaian-tbody" class="text-[13px] text-gray-800">
+                                <!-- JS Generated -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Rincian Per Asesmen -->
+                    <div class="mt-8">
+                        <h4 class="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide border-l-4 border-indigo-600 pl-3">Rincian Ketercapaian Per Tujuan Pembelajaran / Materi</h4>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-[11px] border-collapse border border-gray-400">
+                                <thead class="bg-gray-100 text-[10px] font-bold uppercase">
+                                    <tr>
+                                        <th class="border border-gray-400 p-2 text-left">No</th>
+                                        <th class="border border-gray-400 p-2 text-left">Nama Asesmen / Materi</th>
+                                        <th class="border border-gray-400 p-2 text-center">Tgl</th>
+                                        <th class="border border-gray-400 p-2 text-center">Rata-rata</th>
+                                        <th class="border border-gray-400 p-2 text-center">Tertinggi</th>
+                                        <th class="border border-gray-400 p-2 text-center">Terendah</th>
+                                        <th class="border border-gray-400 p-2 text-center">Tuntas</th>
+                                        <th class="border border-gray-400 p-2 text-center">% Tuntas</th>
+                                        <th class="border border-gray-400 p-2 text-left">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analisis-rincian-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 text-xs text-gray-500 italic">
+                        * Analisis ini dihitung otomatis dari data Input Nilai. Jika belum ada nilai, lakukan input nilai pada tab Input Nilai terlebih dahulu.<br>
+                        * Faktor Penyebab & Tindak Lanjut dapat diedit langsung pada tabel di atas, akan tersimpan otomatis.
+                    </div>
+
+                    <div class="mt-12 hidden print-area">
+                        <div class="flex justify-between text-center text-sm">
+                            <div>
+                                <p>Mengetahui,</p>
+                                <p>Kepala Sekolah</p>
+                                <br /><br /><br />
+                                <p class="font-bold underline print-kepsek">...</p>
+                            </div>
+                            <div>
+                                <p><span class="print-lokasi-tanggal">Jakarta, ........................ 20...</span></p>
+                                <p>Guru Mata Pelajaran</p>
+                                <br /><br /><br />
+                                <p class="font-bold underline print-guru">...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div> <!-- end analisis-sub-kelas-view -->
+
+                <!-- SUB VIEW: PER SISWA -->
+                <div id="analisis-sub-persiswa-view" class="space-y-6 hidden">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 no-print flex flex-wrap gap-3 items-end">
+                        <div>
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Pilih Siswa</label>
+                            <select id="analisis-persiswa-select" onchange="changeAnalisisPerSiswa(this.value)" class="border rounded-lg px-3 py-2 text-sm w-64 bg-white">
+                                <option value="">-- Semua Siswa (Ringkasan) --</option>
+                            </select>
+                        </div>
+                        <div class="flex-1 min-w-[200px]">
+                            <label class="text-[10px] font-bold text-gray-500 uppercase block mb-1">Cari Siswa</label>
+                            <input type="text" id="analisis-persiswa-search" oninput="renderAnalisisPerSiswa()" placeholder="Ketik nama siswa..." class="border rounded-lg px-3 py-2 text-sm w-full" />
+                        </div>
+                        <div class="text-[11px] text-gray-500">
+                            * Klik nama siswa di tabel ringkasan untuk lihat detail.<br>
+                            * Catatan per siswa tersimpan otomatis.
+                        </div>
+                    </div>
+
+                    <!-- Stat Cards Per Siswa (for selected or overall) -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 no-print" id="analisis-persiswa-stat-cards"></div>
+
+                    <!-- Print Area Per Siswa -->
+                    <div id="print-analisis-persiswa" class="bg-white p-8 rounded-xl shadow-sm border border-gray-200 content-card">
+                        <div class="hidden print-area mb-6">
+                            <div class="text-center border-b-2 border-black pb-4 mb-4">
+                                <h3 class="text-2xl font-bold uppercase">ANALISIS KETERCAPAIAN PER SISWA</h3>
+                                <p class="font-bold text-lg uppercase mt-1 print-sekolah">NAMA SEKOLAH</p>
+                            </div>
+                            <table class="w-full text-sm font-medium no-border-table mb-4">
+                                <tr>
+                                    <td style="width: 150px; border: none !important;">Mata Pelajaran</td>
+                                    <td style="width: 10px; border: none !important;">:</td>
+                                    <td style="border: none !important;" class="print-mapel">...</td>
+                                    <td style="width: 150px; border: none !important;">Kelas</td>
+                                    <td style="width: 10px; border: none !important;">:</td>
+                                    <td style="border: none !important;" class="print-kelas-only">...</td>
+                                </tr>
+                                <tr>
+                                    <td style="border: none !important;">Tahun Ajaran</td>
+                                    <td style="border: none !important;">:</td>
+                                    <td style="border: none !important;" class="print-tapel">...</td>
+                                    <td style="border: none !important;">KKTP Min</td>
+                                    <td style="border: none !important;">:</td>
+                                    <td style="border: none !important;"><span class="print-analisis-kktp-persiswa">70</span></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- Ringkasan Semua Siswa -->
+                        <div id="analisis-persiswa-ringkasan-container">
+                            <h4 class="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide border-l-4 border-emerald-600 pl-3">Ringkasan Ketercapaian Semua Siswa</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-[11px] border-collapse border border-gray-400">
+                                    <thead class="bg-emerald-50 text-[10px] font-bold uppercase">
+                                        <tr>
+                                            <th class="border border-gray-400 p-2 text-center w-8">No</th>
+                                            <th class="border border-gray-400 p-2 text-left min-w-[140px]">Nama Siswa</th>
+                                            <th class="border border-gray-400 p-2 text-center">Rata-rata</th>
+                                            <th class="border border-gray-400 p-2 text-center">Tertinggi</th>
+                                            <th class="border border-gray-400 p-2 text-center">Terendah</th>
+                                            <th class="border border-gray-400 p-2 text-center">Jml Nilai</th>
+                                            <th class="border border-gray-400 p-2 text-center">Tuntas / Total</th>
+                                            <th class="border border-gray-400 p-2 text-center">% Tuntas</th>
+                                            <th class="border border-gray-400 p-2 text-left">Materi Tersulit</th>
+                                            <th class="border border-gray-400 p-2 text-center">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="analisis-persiswa-summary-tbody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Detail Per Siswa Terpilih -->
+                        <div id="analisis-persiswa-detail-container" class="mt-8 hidden">
+                            <h4 class="font-bold text-gray-800 mb-3 text-sm uppercase tracking-wide border-l-4 border-indigo-600 pl-3">Detail Ketercapaian: <span id="analisis-persiswa-detail-nama" class="text-indigo-700">-</span></h4>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                                    <p class="text-[10px] font-bold text-gray-500 uppercase">Rata-rata Siswa</p>
+                                    <p class="text-xl font-extrabold text-indigo-700 mt-1" id="detail-persiswa-rata">-</p>
+                                    <p class="text-[11px] text-gray-500 mt-1" id="detail-persiswa-status">-</p>
+                                </div>
+                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                    <p class="text-[10px] font-bold text-gray-500 uppercase">Kekuatan / Materi Dikuasai</p>
+                                    <p class="text-sm font-bold text-emerald-700 mt-1" id="detail-persiswa-kuat">-</p>
+                                </div>
+                                <div class="bg-white border border-gray-200 rounded-lg p-3">
+                                    <p class="text-[10px] font-bold text-gray-500 uppercase">Kelemahan / Perlu Perbaikan</p>
+                                    <p class="text-sm font-bold text-rose-700 mt-1" id="detail-persiswa-lemah">-</p>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto mb-4">
+                                <table class="w-full text-[11px] border-collapse border border-gray-400">
+                                    <thead class="bg-gray-100 text-[10px] font-bold uppercase">
+                                        <tr>
+                                            <th class="border border-gray-400 p-2 text-left">No</th>
+                                            <th class="border border-gray-400 p-2 text-left">Nama Asesmen / Materi</th>
+                                            <th class="border border-gray-400 p-2 text-center">Jenis</th>
+                                            <th class="border border-gray-400 p-2 text-center">Nilai</th>
+                                            <th class="border border-gray-400 p-2 text-center">KKTP</th>
+                                            <th class="border border-gray-400 p-2 text-center">Status</th>
+                                            <th class="border border-gray-400 p-2 text-left">Catatan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="analisis-persiswa-detail-tbody"></tbody>
+                                </table>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[11px] font-bold text-gray-700 uppercase block mb-1">Catatan / Faktor Penyebab (Per Siswa)</label>
+                                    <textarea id="analisis-persiswa-catatan" oninput="saveAnalisisPerSiswa()" class="w-full min-h-[80px] border border-gray-300 rounded-lg p-2 text-[12px] focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none" placeholder="Misal: Kurang teliti pada soal cerita, perlu penguatan konsep dasar..."></textarea>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-bold text-gray-700 uppercase block mb-1">Tindak Lanjut / Solusi (Per Siswa)</label>
+                                    <textarea id="analisis-persiswa-tindak" oninput="saveAnalisisPerSiswa()" class="w-full min-h-[80px] border border-gray-300 rounded-lg p-2 text-[12px] focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none" placeholder="Misal: Berikan latihan tambahan 5 soal perbandingan senilai, bimbingan 2x seminggu..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 text-xs text-gray-500 italic">
+                            * Data diambil otomatis dari Input Nilai. Nilai kosong dianggap belum dinilai.<br>
+                            * Klik baris siswa pada tabel ringkasan untuk melihat detail dan mengisi catatan per siswa.
+                        </div>
+
+                        <div class="mt-12 hidden print-area">
+                            <div class="flex justify-between text-center text-sm">
+                                <div>
+                                    <p>Mengetahui,</p>
+                                    <p>Kepala Sekolah</p>
+                                    <br /><br /><br />
+                                    <p class="font-bold underline print-kepsek">...</p>
+                                </div>
+                                <div>
+                                    <p><span class="print-lokasi-tanggal">Jakarta, ........................ 20...</span></p>
+                                    <p>Guru Mata Pelajaran</p>
+                                    <br /><br /><br />
+                                    <p class="font-bold underline print-guru">...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ==================== TAB 4: PROGRAM REMEDIAL & PENGAYAAN (MATCHING IMAGE) ==================== -->
                 <div class="space-y-6 hidden" id="asesmen-remedial-view">
                     <!-- Top Action Bar -->
                     <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap justify-between items-center gap-3 no-print">
@@ -4492,6 +4774,10 @@
         let dataAbsensi = {}; // Stores Absensi data
         let dataAsesmen = []; // Stores Assessment Plans
         let dataNilai = {}; // Stores Scores
+        let dataAnalisisKetercapaian = {}; // Stores { "tapel|semester|mapel|kelas|paramKey": { catatan, tindakLanjut } } + kktpMin override per context
+        let dataAnalisisPerSiswa = {}; // Stores per-siswa notes { "ctxKey|siswaId": { catatan, tindak, kekuatan, kelemahan } }
+        let _activeAnalisisSubTab = 'kelas'; // kelas | perSiswa
+        let _selectedAnalisisSiswaId = '';
         let activeKaldikMode = 'LHB'; // Default tool
 
         let identitas = {
@@ -25636,6 +25922,8 @@ Object.assign(referensiCP, {
                 absensi: dataAbsensi,
                 asesmen: dataAsesmen,
                 nilai: dataNilai,
+                analisisKetercapaian: dataAnalisisKetercapaian,
+                analisisPerSiswa: dataAnalisisPerSiswa,
                 jadwal: dataJadwal,
                 buku: dataBuku
             };
@@ -25709,6 +25997,8 @@ Object.assign(referensiCP, {
                 dataAbsensi = parsed.absensi || {};
                 dataAsesmen = parsed.asesmen || [];
                 dataNilai = parsed.nilai || {};
+                dataAnalisisKetercapaian = parsed.analisisKetercapaian || {};
+                dataAnalisisPerSiswa = parsed.analisisPerSiswa || {};
                 dataJadwal = parsed.jadwal || [];
                 dataBuku = Array.isArray(parsed.buku) ? parsed.buku : [];
                 
@@ -30198,30 +30488,78 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
         let dataRemedial = [];
         let _activeRemedialAsesmenId = '';
 
+        function getRemedialKktpMin() {
+            try {
+                if (typeof getAnalisisKktpMin === 'function') {
+                    const v = getAnalisisKktpMin();
+                    if (!isNaN(v) && v>0) return v;
+                }
+            } catch(e){}
+            const el = document.getElementById('analisis-kktp-min');
+            if (el) {
+                const p = parseInt(el.value);
+                if (!isNaN(p)) return p;
+            }
+            return 75;
+        }
+
+        function getNilaiForSiswa(siswaId, asesmenId) {
+            if (!siswaId) return NaN;
+            // Jika asesmenId spesifik dipilih
+            if (asesmenId) {
+                const k = `${asesmenId}_${siswaId}`;
+                if (typeof dataNilai !== 'undefined' && dataNilai[k] && dataNilai[k].nilai !== '' && dataNilai[k].nilai != null) {
+                    const v = parseFloat(dataNilai[k].nilai);
+                    if (!isNaN(v)) return v;
+                }
+                return NaN;
+            }
+            // Mode rata-rata: ambil rata-rata dari semua asesmen yang sesuai filter aktif
+            let filteredAsesmen = [];
+            try {
+                filteredAsesmen = (typeof dataAsesmen !== 'undefined' ? dataAsesmen : []).filter(a =>
+                    (!identitas.tapel || a.tapel === identitas.tapel) &&
+                    (!identitas.semester || a.semester === identitas.semester) &&
+                    (!identitas.kelas || a.kelas === identitas.kelas) &&
+                    (!identitas.mapel || a.mapel === identitas.mapel)
+                );
+                if (typeof applyGuruAccessFilter === 'function') filteredAsesmen = applyGuruAccessFilter(filteredAsesmen);
+            } catch(e) { filteredAsesmen = []; }
+
+            if (!filteredAsesmen.length) return NaN;
+            let total = 0, count = 0;
+            filteredAsesmen.forEach(a => {
+                const k = `${a.id}_${siswaId}`;
+                if (dataNilai[k] && dataNilai[k].nilai !== '' && dataNilai[k].nilai != null) {
+                    const v = parseFloat(dataNilai[k].nilai);
+                    if (!isNaN(v)) { total += v; count++; }
+                }
+            });
+            if (count===0) return NaN;
+            return total / count;
+        }
+
         function populateRemedialAsesmenDropdown() {
             const sel = document.getElementById('select-remedial-sumber-asesmen');
             if (!sel) return;
 
-            let html = `<option value="">-- Nilai Rata-Rata / Otomatis --</option>`;
+            let html = `<option value="">-- Nilai Rata-Rata / Otomatis (Semua Asesmen) --</option>`;
             
             // Cari asesmen yang sesuai dengan kelas dan mapel aktif
-            const filteredAsesmen = (typeof dataAsesmen !== 'undefined' ? dataAsesmen : []).filter(a =>
-                (!identitas.kelas || a.kelas === identitas.kelas) &&
-                (!identitas.mapel || a.mapel === identitas.mapel)
-            );
+            let filteredAsesmen = [];
+            try {
+                filteredAsesmen = (typeof dataAsesmen !== 'undefined' ? dataAsesmen : []).filter(a =>
+                    (!identitas.kelas || a.kelas === identitas.kelas) &&
+                    (!identitas.mapel || a.mapel === identitas.mapel)
+                );
+                if (typeof applyGuruAccessFilter === 'function') filteredAsesmen = applyGuruAccessFilter(filteredAsesmen);
+            } catch(e) { filteredAsesmen = []; }
 
             if (filteredAsesmen.length > 0) {
                 filteredAsesmen.forEach(a => {
                     const selAttr = (a.id === _activeRemedialAsesmenId) ? "selected" : "";
                     html += `<option value="${escapeHtml(a.id)}" ${selAttr}>[${escapeHtml(a.jenis || 'Sumatif')}] ${escapeHtml(a.nama)}</option>`;
                 });
-            } else {
-                // Tambahkan opsi standar agar dropdown tidak pernah kosong
-                html += `
-                    <option value="sample_sumatif_1" ${_activeRemedialAsesmenId === 'sample_sumatif_1' ? 'selected' : ''}>[Sumatif] Sumatif Lingkup Materi 1</option>
-                    <option value="sample_sumatif_2" ${_activeRemedialAsesmenId === 'sample_sumatif_2' ? 'selected' : ''}>[Sumatif] Sumatif Lingkup Materi 2</option>
-                    <option value="sample_sas" ${_activeRemedialAsesmenId === 'sample_sas' ? 'selected' : ''}>[SAS] Sumatif Akhir Semester</option>
-                `;
             }
 
             sel.innerHTML = html;
@@ -30229,7 +30567,7 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
 
         function changeRemedialSumberAsesmen(val) {
             _activeRemedialAsesmenId = val;
-            autoFillRemedialFromNilai(true); // silent true = langsung ambil nilai awal tanpa alert dialog
+            autoFillRemedialFromNilai(true);
         }
 
         function getStudentsFromMaster() {
@@ -30248,7 +30586,7 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
             const students = getStudentsFromMaster();
             if (students.length === 0) {
                 if (!silent) {
-                    alert("Data Master Siswa untuk kelas '" + (identitas.kelas || "-") + "' masih kosong. Silakan tambahkan siswa di menu 'Data Master -> Data Siswa' terlebih dahulu, atau ketik langsung di tabel ini.");
+                    alert("Data Master Siswa untuk kelas '" + (identitas.kelas || "-") + "' masih kosong. Silakan tambahkan siswa di menu 'Data Master -> Data Siswa' terlebih dahulu.");
                 }
                 return;
             }
@@ -30257,22 +30595,38 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 return;
             }
 
-            dataRemedial = students.map(s => ({
-                id: s.id,
-                nama: s.nama,
-                remedial: "",
-                pengayaan: "",
-                tanggal: "15 Oktober 2026",
-                sebelum: "",
-                sesudah: "",
-                kesimpulan: ""
-            }));
+            // Bangun dari master siswa + isi nilai Sebelum langsung dari data input nilai (tanpa data contoh)
+            const kktpMin = getRemedialKktpMin();
+            dataRemedial = students.map(s => {
+                const nilaiAwal = getNilaiForSiswa(s.id, _activeRemedialAsesmenId || '');
+                const sebelumStr = isNaN(nilaiAwal) ? '' : String(Math.round(nilaiAwal));
+                let remedialTxt = '', pengayaanTxt = '', kesimpulanTxt = '';
+                if (!isNaN(nilaiAwal)) {
+                    if (nilaiAwal < kktpMin) {
+                        remedialTxt = 'Bimbingan Ulang / Tugas Tambahan';
+                        kesimpulanTxt = 'Belum Tuntas - Perlu Remedial';
+                    } else {
+                        pengayaanTxt = 'Proyek Mandiri / Tutor Sebaya';
+                        kesimpulanTxt = 'Tuntas - Pengayaan';
+                    }
+                }
+                return {
+                    id: s.id,
+                    nama: s.nama,
+                    remedial: remedialTxt,
+                    pengayaan: pengayaanTxt,
+                    tanggal: '',
+                    sebelum: sebelumStr,
+                    sesudah: '',
+                    kesimpulan: kesimpulanTxt
+                };
+            });
 
             localStorage.setItem('dataRemedial', JSON.stringify(dataRemedial));
             renderAsesmenRemedial();
             updateAsesmenSiswaCountBadge();
             if (!silent) {
-                alert(`✅ Berhasil mengambil ${students.length} siswa dari Data Master Siswa untuk Kelas ${identitas.kelas || '-'}!`);
+                alert(`✅ Berhasil mengambil ${students.length} siswa dari Data Master Siswa untuk Kelas ${identitas.kelas || '-'}! Nilai awal diambil dari Input Nilai.`);
             }
         }
 
@@ -30286,51 +30640,75 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 }
             }
 
+            // Bersihkan data contoh lama jika masih ada (Cahaya Hutapea dll)
+            if (dataRemedial && dataRemedial.length && dataRemedial.some(r => r.nama === 'Cahaya Hutapea' || r.nama === 'Jamila' && r.sebelum === '82')) {
+                // jika ada nama contoh tapi ada siswa master, ganti dengan master; jika tidak ada master, kosongkan
+                const students = getStudentsFromMaster();
+                if (students.length > 0) {
+                    dataRemedial = []; // akan diisi ulang di bawah
+                } else {
+                    dataRemedial = [];
+                }
+                localStorage.setItem('dataRemedial', JSON.stringify(dataRemedial));
+            }
+
             if (!dataRemedial || dataRemedial.length === 0) {
                 const students = getStudentsFromMaster();
                 if (students.length > 0) {
-                    dataRemedial = students.map(s => ({
-                        id: s.id,
-                        nama: s.nama,
-                        remedial: "",
-                        pengayaan: "",
-                        tanggal: "15 Oktober 2026",
-                        sebelum: "",
-                        sesudah: "",
-                        kesimpulan: ""
-                    }));
+                    const kktpMin = getRemedialKktpMin();
+                    dataRemedial = students.map(s => {
+                        const nilaiAwal = getNilaiForSiswa(s.id, _activeRemedialAsesmenId || '');
+                        const sebelumStr = isNaN(nilaiAwal) ? '' : String(Math.round(nilaiAwal));
+                        let remedialTxt = '', pengayaanTxt = '', kesimpulanTxt = '';
+                        if (!isNaN(nilaiAwal)) {
+                            if (nilaiAwal < kktpMin) {
+                                remedialTxt = 'Bimbingan Ulang / Tugas Tambahan';
+                                kesimpulanTxt = 'Belum Tuntas - Perlu Remedial';
+                            } else {
+                                pengayaanTxt = 'Proyek Mandiri / Tutor Sebaya';
+                                kesimpulanTxt = 'Tuntas - Pengayaan';
+                            }
+                        }
+                        return {
+                            id: s.id,
+                            nama: s.nama,
+                            remedial: remedialTxt,
+                            pengayaan: pengayaanTxt,
+                            tanggal: '',
+                            sebelum: sebelumStr,
+                            sesudah: '',
+                            kesimpulan: kesimpulanTxt
+                        };
+                    });
                 } else {
-                    dataRemedial = [
-                        { nama: "Cahaya Hutapea", remedial: "Bimbingan Ulang", pengayaan: "", tanggal: "15 Oktober 2026", sebelum: "62", sesudah: "78", kesimpulan: "Tuntas (Remedial)" },
-                        { nama: "Jamila", remedial: "", pengayaan: "Proyek Mandiri", tanggal: "15 Oktober 2026", sebelum: "82", sesudah: "88", kesimpulan: "Terlampaui (Pengayaan)" },
-                        { nama: "Natali Zefanya Manurung", remedial: "Tugas Tambahan", pengayaan: "", tanggal: "15 Oktober 2026", sebelum: "65", sesudah: "80", kesimpulan: "Tuntas (Remedial)" },
-                        { nama: "Nur Hafizah", remedial: "", pengayaan: "Tutor Sebaya", tanggal: "15 Oktober 2026", sebelum: "85", sesudah: "90", kesimpulan: "Terlampaui (Pengayaan)" },
-                        { nama: "", remedial: "", pengayaan: "", tanggal: "", sebelum: "", sesudah: "", kesimpulan: "" },
-                        { nama: "", remedial: "", pengayaan: "", tanggal: "", sebelum: "", sesudah: "", kesimpulan: "" },
-                        { nama: "", remedial: "", pengayaan: "", tanggal: "", sebelum: "", sesudah: "", kesimpulan: "" },
-                        { nama: "", remedial: "", pengayaan: "", tanggal: "", sebelum: "", sesudah: "", kesimpulan: "" }
-                    ];
+                    dataRemedial = [];
                 }
+            } else {
+                // Jika data sudah ada, sinkronkan nilai 'sebelum' dengan dataNilai terbaru (tanpa menimpa sesudah)
+                try {
+                    dataRemedial.forEach(r => {
+                        if (!r.id) return;
+                        const nilaiAwal = getNilaiForSiswa(r.id, _activeRemedialAsesmenId || '');
+                        if (!isNaN(nilaiAwal)) {
+                            r.sebelum = String(Math.round(nilaiAwal));
+                            const kktpMin = getRemedialKktpMin();
+                            if (nilaiAwal < kktpMin) {
+                                if (!r.remedial) r.remedial = 'Bimbingan Ulang / Tugas Tambahan';
+                                if (!r.kesimpulan || r.kesimpulan.includes('Terlampaui')) r.kesimpulan = 'Belum Tuntas - Perlu Remedial';
+                                if (!r.sesudah) r.pengayaan = '';
+                            } else {
+                                if (!r.pengayaan) r.pengayaan = 'Proyek Mandiri / Tutor Sebaya';
+                                if (!r.kesimpulan || r.kesimpulan.includes('Belum')) r.kesimpulan = 'Tuntas - Pengayaan';
+                                if (!r.sesudah) r.remedial = '';
+                            }
+                        }
+                    });
+                } catch(e){}
             }
         }
 
         function renderAsesmenRemedial() {
             loadRemedialData();
-
-            const students = getStudentsFromMaster();
-            if (students.length > 0 && dataRemedial.length > 0 && dataRemedial[0].nama === "Cahaya Hutapea") {
-                dataRemedial = students.map(s => ({
-                    id: s.id,
-                    nama: s.nama,
-                    remedial: "",
-                    pengayaan: "",
-                    tanggal: "15 Oktober 2026",
-                    sebelum: "",
-                    sesudah: "",
-                    kesimpulan: ""
-                }));
-            }
-
             populateRemedialAsesmenDropdown();
 
             const setVal = (id, val) => {
@@ -30342,10 +30720,10 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 if (el && txt) el.innerText = txt;
             };
 
-            setVal('rem-sekolah', identitas.sekolah || 'SMK SWASTA JAMBI MEDAN');
-            setVal('rem-semester', identitas.semester || '1');
-            setVal('rem-kelas', identitas.kelas || 'X MPLB 3');
-            setVal('rem-mapel', identitas.mapel || 'Dasar Kejuruan');
+            setVal('rem-sekolah', identitas.sekolah || '');
+            setVal('rem-semester', identitas.semester || '');
+            setVal('rem-kelas', identitas.kelas || '');
+            setVal('rem-mapel', identitas.mapel || '');
 
             setTxt('rem-ttd-kepsek', identitas.kepsek ? `( ${identitas.kepsek} )` : '( ............................................ )');
             setTxt('rem-ttd-nip-kepsek', identitas.nipKepsek || '.........................................');
@@ -30366,17 +30744,42 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
             if (!tbody) return;
             tbody.innerHTML = '';
 
+            if (!dataRemedial || dataRemedial.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-400">Belum ada data siswa. Pilih Kelas di filter atas, lalu klik "Ambil Siswa dari Master". Nilai Sebelum akan terisi otomatis dari Input Nilai.</td></tr>`;
+                return;
+            }
+
+            const kktpMin = getRemedialKktpMin();
+
             dataRemedial.forEach((row, idx) => {
                 const tr = document.createElement('tr');
+                // Tentukan warna / badge berdasarkan sebelum vs KKTP
+                const sebelumNum = parseFloat(row.sebelum);
+                let badgeSebelum = '';
+                if (!isNaN(sebelumNum)) {
+                    if (sebelumNum < kktpMin) badgeSebelum = `<div class="text-[10px] text-rose-600 font-bold">Belum Tuntas</div>`;
+                    else badgeSebelum = `<div class="text-[10px] text-emerald-600 font-bold">Tuntas</div>`;
+                } else {
+                    badgeSebelum = `<div class="text-[10px] text-gray-400">Belum ada nilai</div>`;
+                }
+
+                // Sesudah kosong -> tampilkan input, jika sudah ada nilai tampilkan
                 tr.innerHTML = `
                     <td class="center font-bold">${idx + 1}</td>
-                    <td><input type="text" value="${escapeHtml(row.nama || '')}" placeholder="Nama Siswa..." onchange="updateRemedialRow(${idx}, 'nama', this.value)" /></td>
-                    <td><input type="text" value="${escapeHtml(row.remedial || '')}" placeholder="Remedial..." onchange="updateRemedialRow(${idx}, 'remedial', this.value)" /></td>
-                    <td><input type="text" value="${escapeHtml(row.pengayaan || '')}" placeholder="Pengayaan..." onchange="updateRemedialRow(${idx}, 'pengayaan', this.value)" /></td>
-                    <td class="center"><input type="text" value="${escapeHtml(row.tanggal || '')}" placeholder="Tgl..." onchange="updateRemedialRow(${idx}, 'tanggal', this.value)" /></td>
-                    <td class="center"><input type="text" value="${escapeHtml(row.sebelum || '')}" placeholder="-" onchange="updateRemedialRow(${idx}, 'sebelum', this.value)" /></td>
-                    <td class="center"><input type="text" value="${escapeHtml(row.sesudah || '')}" placeholder="-" onchange="updateRemedialRow(${idx}, 'sesudah', this.value)" /></td>
-                    <td><input type="text" value="${escapeHtml(row.kesimpulan || '')}" placeholder="Kesimpulan..." onchange="updateRemedialRow(${idx}, 'kesimpulan', this.value)" /></td>
+                    <td><div class="font-medium text-[12px]">${escapeHtml(row.nama || '')}</div><div class="text-[10px] text-gray-400">${row.id ? 'ID: '+escapeHtml(row.id.substring(0,6)) : ''}</div></td>
+                    <td><input type="text" value="${escapeHtml(row.remedial || '')}" placeholder="Isi jika remedial..." class="w-full border rounded px-1 py-1 text-[11px]" onchange="updateRemedialRow(${idx}, 'remedial', this.value)" /></td>
+                    <td><input type="text" value="${escapeHtml(row.pengayaan || '')}" placeholder="Isi jika pengayaan..." class="w-full border rounded px-1 py-1 text-[11px]" onchange="updateRemedialRow(${idx}, 'pengayaan', this.value)" /></td>
+                    <td class="center"><input type="text" value="${escapeHtml(row.tanggal || '')}" placeholder="Tgl pelaksanaan" class="w-full border rounded px-1 py-1 text-[11px] text-center" onchange="updateRemedialRow(${idx}, 'tanggal', this.value)" /></td>
+                    <td class="center">
+                        <div class="font-bold text-[13px] ${!isNaN(sebelumNum) && sebelumNum < kktpMin ? 'text-rose-700' : 'text-gray-800'}">${escapeHtml(row.sebelum || '-')}</div>
+                        ${badgeSebelum}
+                        <div class="text-[9px] text-gray-400 mt-1 no-print">Otomatis dari Input Nilai</div>
+                    </td>
+                    <td class="center"><input type="number" min="0" max="100" value="${escapeHtml(row.sesudah || '')}" placeholder="-" class="w-16 border rounded px-1 py-1 text-[12px] text-center font-bold" onchange="updateRemedialRow(${idx}, 'sesudah', this.value)" /></td>
+                    <td>
+                        <input type="text" value="${escapeHtml(row.kesimpulan || '')}" placeholder="Kesimpulan..." class="w-full border rounded px-1 py-1 text-[11px]" onchange="updateRemedialRow(${idx}, 'kesimpulan', this.value)" />
+                        <div class="text-[9px] text-gray-400 mt-1">KKTP ${kktpMin}</div>
+                    </td>
                     <td class="center no-print">
                         <button onclick="deleteRemedialRow(${idx})" class="text-red-500 hover:text-red-700" title="Hapus Baris">
                             <i class="fas fa-trash-alt"></i>
@@ -30413,8 +30816,7 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
 
         function autoFillRemedialFromNilai(silent = false) {
             const selAsesId = _activeRemedialAsesmenId || document.getElementById('select-remedial-sumber-asesmen')?.value;
-            let asesNama = "Asesmen Terpilih";
-
+            let asesNama = "Rata-rata Semua Asesmen";
             const asesObj = (typeof dataAsesmen !== 'undefined' ? dataAsesmen : []).find(a => a.id === selAsesId);
             if (asesObj) {
                 asesNama = `[${asesObj.jenis || 'Sumatif'}] ${asesObj.nama}`;
@@ -30426,49 +30828,48 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 return;
             }
 
-            // Loop setiap baris di dataRemedial (atau bangun dari students)
             if (dataRemedial.length === 0 && students.length > 0) {
-                dataRemedial = students.map(s => ({ id: s.id, nama: s.nama }));
+                dataRemedial = students.map(s => ({ id: s.id, nama: s.nama, remedial: "", pengayaan: "", tanggal: "", sebelum: "", sesudah: "", kesimpulan: "" }));
             }
 
+            const kktpMin = getRemedialKktpMin();
+            let terisi = 0, kosong = 0;
+
             dataRemedial.forEach(r => {
-                let beforeScore = NaN;
-                
-                // Cek apakah ada nilai asli di dataNilai untuk (selAsesId, r.id)
-                if (selAsesId && r.id && typeof dataNilai !== 'undefined') {
-                    const k = `${selAsesId}_${r.id}`;
-                    if (dataNilai[k] && dataNilai[k].nilai !== '') {
-                        beforeScore = parseFloat(dataNilai[k].nilai);
+                if (!r.id) return;
+                const nilaiAwal = getNilaiForSiswa(r.id, selAsesId || '');
+                if (!isNaN(nilaiAwal)) {
+                    r.sebelum = String(Math.round(nilaiAwal));
+                    terisi++;
+                    if (nilaiAwal < kktpMin) {
+                        r.remedial = r.remedial || "Bimbingan Ulang / Tugas Tambahan";
+                        r.pengayaan = "";
+                        r.kesimpulan = "Belum Tuntas - Perlu Remedial";
+                    } else {
+                        r.pengayaan = r.pengayaan || "Proyek Mandiri / Tutor Sebaya";
+                        r.remedial = "";
+                        r.kesimpulan = "Tuntas - Pengayaan";
                     }
-                }
-
-                // Jika belum ada nilai asli, gunakan r.sebelum atau buat nilai realistis
-                if (isNaN(beforeScore)) {
-                    beforeScore = r.sebelum ? parseFloat(r.sebelum) : NaN;
-                    if (isNaN(beforeScore)) {
-                        beforeScore = Math.floor(60 + Math.random() * 35);
-                    }
-                }
-
-                const isRem = beforeScore < 75;
-                r.sebelum = String(beforeScore);
-                r.remedial = isRem ? (r.remedial || "Bimbingan Ulang / Tugas Tambahan") : "";
-                r.pengayaan = !isRem ? (r.pengayaan || "Proyek Mandiri / Tutor Sebaya") : "";
-                r.tanggal = r.tanggal || "15 Oktober 2026";
-                
-                if (isRem) {
-                    r.sesudah = r.sesudah || String(75 + Math.floor(Math.random()*4));
-                    r.kesimpulan = "Tuntas (Remedial)";
                 } else {
-                    r.sesudah = r.sesudah || String(beforeScore + Math.floor(Math.random()*5));
-                    r.kesimpulan = "Terlampaui (Pengayaan)";
+                    r.sebelum = "";
+                    kosong++;
+                    // jangan isi remedial/pengayaan jika belum ada nilai
+                    if (!r.sebelum) {
+                        // biarkan kosong agar user tau belum ada nilai
+                    }
                 }
+                // sesudah tetap kosong - diisi manual setelah remedial dilaksanakan, tidak di-random
+                // tanggal biarkan apa adanya (tidak auto isi tanggal contoh)
             });
 
             localStorage.setItem('dataRemedial', JSON.stringify(dataRemedial));
             renderAsesmenRemedial();
             if (!silent) {
-                alert(`⚡ Berhasil mengambil Nilai Awal dari ${asesNama} dan menentukan Program Remedial/Pengayaan berdasarkan KKTP 75!`);
+                if (kosong > 0 && terisi === 0) {
+                    alert(`ℹ️ Belum ada nilai pada ${asesNama} untuk kelas ${identitas.kelas || '-'}. Silakan input nilai dulu di tab Input Nilai.`);
+                } else {
+                    alert(`✅ Berhasil mengambil nilai awal dari ${asesNama}.\nTerisi: ${terisi} siswa, Belum ada nilai: ${kosong} siswa.\nKKTP: ${kktpMin}\nNilai Sesudah dikosongkan untuk diisi setelah remedial.`);
+                }
             }
         }
 
@@ -30531,6 +30932,8 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 renderAsesmenNilai();
             } else if (_activeAsesmenTab === 'rekap') {
                 renderAsesmenRekap();
+            } else if (_activeAsesmenTab === 'analisis') {
+                renderAsesmenAnalisis();
             }
             updateAsesmenSiswaCountBadge();
             updatePrintData();
@@ -30545,6 +30948,8 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 renderAsesmenNilai();
             } else if (_activeAsesmenTab === 'rekap') {
                 renderAsesmenRekap();
+            } else if (_activeAsesmenTab === 'analisis') {
+                renderAsesmenAnalisis();
             }
             updatePrintData();
         }
@@ -31299,6 +31704,8 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
             document.getElementById('asesmen-rencana-view').classList.add('hidden');
             document.getElementById('asesmen-nilai-view').classList.add('hidden');
             document.getElementById('asesmen-rekap-view').classList.add('hidden');
+            const analisisView = document.getElementById('asesmen-analisis-view');
+            if (analisisView) analisisView.classList.add('hidden');
             const remView = document.getElementById('asesmen-remedial-view');
             if (remView) remView.classList.add('hidden');
 
@@ -31306,30 +31713,39 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
             const btnRencana = document.getElementById('btn-tab-rencana');
             const btnNilai = document.getElementById('btn-tab-nilai');
             const btnRekap = document.getElementById('btn-tab-rekap');
+            const btnAnalisis = document.getElementById('btn-tab-analisis');
             const btnRemedial = document.getElementById('btn-tab-remedial');
-            if (btnRemedial) btnRemedial.className = 'bg-white text-gray-600 border border-l-0 px-4 py-2 rounded-r-lg text-sm font-medium hover:bg-gray-50 transition-colors';
 
             // Default styles (Inactive)
-            btnRencana.className = 'bg-white text-gray-600 border border-r-0 px-4 py-2 rounded-l-lg text-sm font-medium hover:bg-gray-50 transition-colors';
-            btnNilai.className = 'bg-white text-gray-600 border px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors';
-            btnRekap.className = 'bg-white text-gray-600 border border-l-0 px-4 py-2 rounded-r-lg text-sm font-medium hover:bg-gray-50 transition-colors';
+            if (btnRencana) btnRencana.className = 'bg-white text-gray-600 border px-4 py-2 rounded-l-lg text-sm font-medium hover:bg-gray-50 transition-colors';
+            if (btnNilai) btnNilai.className = 'bg-white text-gray-600 border border-l-0 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors';
+            if (btnRekap) btnRekap.className = 'bg-white text-gray-600 border border-l-0 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors';
+            if (btnAnalisis) btnAnalisis.className = 'bg-white text-gray-600 border border-l-0 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors';
+            if (btnRemedial) btnRemedial.className = 'bg-white text-gray-600 border border-l-0 px-4 py-2 rounded-r-lg text-sm font-medium hover:bg-gray-50 transition-colors';
 
             // Activate specific tab
             if(tab === 'rencana') {
                 document.getElementById('asesmen-rencana-view').classList.remove('hidden');
-                btnRencana.className = 'bg-indigo-600 text-white border border-r-0 px-4 py-2 rounded-l-lg text-sm font-medium transition-colors';
+                if (btnRencana) btnRencana.className = 'bg-indigo-600 text-white border px-4 py-2 rounded-l-lg text-sm font-medium transition-colors';
             } else if(tab === 'nilai') {
                 document.getElementById('asesmen-nilai-view').classList.remove('hidden');
-                btnNilai.className = 'bg-indigo-600 text-white border px-4 py-2 text-sm font-medium transition-colors';
+                if (btnNilai) btnNilai.className = 'bg-indigo-600 text-white border border-l-0 px-4 py-2 text-sm font-medium transition-colors';
                 renderAsesmenNilaiOptions();
             } else if(tab === 'rekap') {
                 document.getElementById('asesmen-rekap-view').classList.remove('hidden');
-                btnRekap.className = 'bg-indigo-600 text-white border border-l-0 px-4 py-2 text-sm font-medium transition-colors';
+                if (btnRekap) btnRekap.className = 'bg-indigo-600 text-white border border-l-0 px-4 py-2 text-sm font-medium transition-colors';
                 renderAsesmenRekap();
+            } else if(tab === 'analisis') {
+                if (analisisView) analisisView.classList.remove('hidden');
+                if (btnAnalisis) btnAnalisis.className = 'bg-indigo-600 text-white border border-l-0 px-4 py-2 text-sm font-medium transition-colors';
+                // default sub tab kelas jika belum ada
+                if (!_activeAnalisisSubTab) _activeAnalisisSubTab = 'kelas';
+                renderAsesmenAnalisis();
+                // pastikan sub tab UI sinkron
+                try { switchAnalisisSubTab(_activeAnalisisSubTab); } catch(e){}
             } else if(tab === 'remedial') {
-                const remView = document.getElementById('asesmen-remedial-view');
-                if (remView) remView.classList.remove('hidden');
-                const btnRemedial = document.getElementById('btn-tab-remedial');
+                const remView2 = document.getElementById('asesmen-remedial-view');
+                if (remView2) remView2.classList.remove('hidden');
                 if (btnRemedial) btnRemedial.className = 'bg-indigo-600 text-white border border-l-0 px-4 py-2 rounded-r-lg text-sm font-medium transition-colors';
                 renderAsesmenRemedial();
             }
@@ -31627,6 +32043,582 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
                 tr.innerHTML = rowHtml;
                 tbody.appendChild(tr);
             });
+        }
+
+        // ======================= ANALISIS KETERCAPAIAN TARGET BELAJAR =======================
+        function getAnalisisContextKey() {
+            return `${identitas.tapel || ''}|${identitas.semester || ''}|${identitas.mapel || ''}|${identitas.kelas || ''}`;
+        }
+
+        function getAnalisisKktpMin() {
+            const inp = document.getElementById('analisis-kktp-min');
+            let val = inp ? parseInt(inp.value) : NaN;
+            if (isNaN(val)) {
+                // fallback coba ambil dari data KKTP atau default 70
+                val = 70;
+                try {
+                    // jika ada data KKTP untuk mapel/kelas ini, ambil rata-rata interval bawah
+                    const kktpEntries = Object.values(dataKktp || {}).filter(k => k && k.mapel === identitas.mapel && k.kelas === identitas.kelas);
+                    if (kktpEntries.length) {
+                        const nums = kktpEntries.map(k => parseInt(k.min) || parseInt(k.kktp) || 0).filter(n => n>0);
+                        if (nums.length) val = Math.min(...nums);
+                    }
+                } catch(e){}
+            }
+            return val;
+        }
+
+        function renderAsesmenAnalisis() {
+            const tbody = document.getElementById('analisis-ketercapaian-tbody');
+            const rincianTbody = document.getElementById('analisis-rincian-tbody');
+            const statCards = document.getElementById('analisis-stat-cards');
+            const kktpMinEl = document.getElementById('analisis-kktp-min');
+            const printKktpEl = document.getElementById('print-analisis-kktp');
+            if (!tbody) return;
+
+            const kktpMin = getAnalisisKktpMin();
+            if (kktpMinEl && parseInt(kktpMinEl.value) !== kktpMin) {
+                // jangan override jika user sedang edit? biarkan saja
+            }
+            if (printKktpEl) printKktpEl.textContent = kktpMin;
+
+            // Filter asesmen sesuai filter global
+            let filteredAsesmen = dataAsesmen.filter(d =>
+                (d.tapel === identitas.tapel) &&
+                (d.semester === identitas.semester) &&
+                (d.mapel === identitas.mapel) &&
+                (d.kelas === identitas.kelas)
+            );
+            filteredAsesmen = applyGuruAccessFilter(filteredAsesmen);
+
+            // Get students
+            let students = masterData.siswa.filter(s => s.kelas === identitas.kelas);
+            if (identitas.tapel) students = students.filter(s => !s.tapel || s.tapel === identitas.tapel);
+            const totalSiswa = students.length;
+
+            // Kumpulkan semua nilai
+            let allScores = [];
+            let perAsesmenStats = [];
+            let siswaTuntasSet = new Set();
+            let siswaScoresAvg = {}; // siswaId -> {total, count}
+
+            filteredAsesmen.forEach(asm => {
+                let scores = [];
+                students.forEach(s => {
+                    const key = `${asm.id}_${s.id}`;
+                    const saved = dataNilai[key];
+                    if (saved && saved.nilai !== '' && saved.nilai != null) {
+                        const v = parseFloat(saved.nilai);
+                        if (!isNaN(v)) {
+                            scores.push(v);
+                            allScores.push(v);
+                            if (!siswaScoresAvg[s.id]) siswaScoresAvg[s.id] = { total: 0, count: 0 };
+                            siswaScoresAvg[s.id].total += v;
+                            siswaScoresAvg[s.id].count += 1;
+                        }
+                    }
+                });
+                if (scores.length) {
+                    const sum = scores.reduce((a,b)=>a+b,0);
+                    const avg = sum / scores.length;
+                    const max = Math.max(...scores);
+                    const min = Math.min(...scores);
+                    const tuntas = scores.filter(v=>v>=kktpMin).length;
+                    const pct = scores.length ? (tuntas / scores.length * 100) : 0;
+                    perAsesmenStats.push({
+                        id: asm.id,
+                        nama: asm.nama,
+                        tp: asm.tp || '',
+                        jenis: asm.jenis || '',
+                        tanggal: asm.tanggal || '',
+                        avg, max, min, tuntas, total: scores.length, pct
+                    });
+                } else {
+                    perAsesmenStats.push({
+                        id: asm.id,
+                        nama: asm.nama,
+                        tp: asm.tp || '',
+                        jenis: asm.jenis || '',
+                        tanggal: asm.tanggal || '',
+                        avg: NaN, max: NaN, min: NaN, tuntas: 0, total: 0, pct: 0
+                    });
+                }
+            });
+
+            // Hitung rata-rata kelas (dari semua nilai, atau dari rata-rata siswa)
+            let rataKelas = 0;
+            if (allScores.length) {
+                rataKelas = allScores.reduce((a,b)=>a+b,0) / allScores.length;
+            }
+
+            // Ketuntasan KKTP berdasarkan rata-rata siswa
+            let tuntasSiswa = 0;
+            let belumTuntasSiswa = 0;
+            Object.values(siswaScoresAvg).forEach(obj => {
+                const avg = obj.count ? obj.total / obj.count : 0;
+                if (avg >= kktpMin) tuntasSiswa++; else belumTuntasSiswa++;
+            });
+            // Jika belum ada nilai per siswa tapi ada allScores, fallback hitung proporsi
+            if (!Object.keys(siswaScoresAvg).length && allScores.length) {
+                const tuntasAll = allScores.filter(v=>v>=kktpMin).length;
+                tuntasSiswa = Math.round(tuntasAll / allScores.length * totalSiswa);
+                belumTuntasSiswa = totalSiswa - tuntasSiswa;
+            } else if (totalSiswa && !Object.keys(siswaScoresAvg).length) {
+                // belum ada data sama sekali
+                tuntasSiswa = 0;
+                belumTuntasSiswa = totalSiswa;
+            } else {
+                // siswa yang belum punya nilai sama sekali dianggap belum tuntas? Sesuaikan: totalSiswa - yang ada
+                const siswaSudahDinilai = Object.keys(siswaScoresAvg).length;
+                if (totalSiswa > siswaSudahDinilai) {
+                    belumTuntasSiswa += (totalSiswa - siswaSudahDinilai);
+                }
+            }
+
+            // Materi paling sulit = rata-rata terendah
+            let materiTersulit = null;
+            let validStats = perAsesmenStats.filter(s => !isNaN(s.avg));
+            if (validStats.length) {
+                validStats.sort((a,b)=>a.avg - b.avg);
+                materiTersulit = validStats[0];
+            }
+
+            // Context key untuk simpan catatan custom
+            const ctxKey = getAnalisisContextKey();
+            const getSaved = (param) => {
+                const k = `${ctxKey}|${param}`;
+                return (dataAnalisisKetercapaian && dataAnalisisKetercapaian[k]) ? dataAnalisisKetercapaian[k] : { catatan: '', tindak: '' };
+            };
+
+            // Default catatan & tindak lanjut berbasis logika sederhana
+            const defaultCatatan = {
+                rata: allScores.length ? (rataKelas >= 80 ? 'Di atas standar minimum kelas.' : rataKelas >= kktpMin ? 'Mencapai standar, perlu peningkatan ke predikat baik.' : 'Di bawah standar, perlu intervensi.') : 'Belum ada data nilai.',
+                tuntas: totalSiswa ? `${tuntasSiswa} dari ${totalSiswa} siswa tuntas. ${belumTuntasSiswa} belum tuntas.` : 'Belum ada data siswa.',
+                sulit: materiTersulit ? `Rata-rata ${materiTersulit.avg.toFixed(1)} pada materi "${materiTersulit.nama}".` : 'Belum terdeteksi (belum ada nilai).'
+            };
+            const defaultTindak = {
+                rata: rataKelas >= 80 ? 'Pertahankan metode mengajar saat ini dan beri pengayaan.' : 'Perkuat diferensiasi & latihan soal HOTS.',
+                tuntas: belumTuntasSiswa>0 ? `Berikan bimbingan intensif personal untuk ${belumTuntasSiswa} siswa, program remedial terjadwal.` : 'Lanjutkan pengayaan untuk mempertahankan ketuntasan.',
+                sulit: materiTersulit ? `Sediakan media interaktif / contoh nyata untuk "${materiTersulit.nama}", tambah latihan soal berbasis cerita & diskusi kelompok.` : 'Lengkapi input nilai agar analisis materi sulit muncul.'
+            };
+
+            // Jika user belum pernah edit, prefill dengan default sesuai contoh user (sesuai image)
+            // Contoh image: rata 78, ketuntasan 18/22, materi Perbandingan Senilai
+            // Kita tetap hitung otomatis, tapi sediakan placeholder catatan
+            const rows = [
+                {
+                    param: 'Nilai Rata-Rata Kelas',
+                    key: 'rata',
+                    hasil: allScores.length ? rataKelas.toFixed(1) : '-',
+                    catatanDef: defaultCatatan.rata,
+                    tindakDef: defaultTindak.rata
+                },
+                {
+                    param: `Ketuntasan KKTP (Min. ${kktpMin})`,
+                    key: 'tuntas',
+                    hasil: totalSiswa ? `${tuntasSiswa} dari ${totalSiswa} Siswa (${totalSiswa? (tuntasSiswa/totalSiswa*100).toFixed(0):0}%)` : '-',
+                    catatanDef: `${belumTuntasSiswa>0? belumTuntasSiswa+' siswa belum tuntas karena perlu remedi.' : 'Semua siswa tuntas.'}`,
+                    tindakDef: defaultTindak.tuntas
+                },
+                {
+                    param: 'Materi Paling Sulit',
+                    key: 'sulit',
+                    hasil: materiTersulit ? `${materiTersulit.nama} (${materiTersulit.avg.toFixed(1)})` : (filteredAsesmen.length? 'Belum ada nilai' : 'Belum ada asesmen'),
+                    catatanDef: materiTersulit ? (materiTersulit.tp ? `Topik: ${materiTersulit.tp.substring(0,80)} - Kurang latihan soal berbasis cerita.` : 'Kurang latihan soal berbasis cerita.') : 'Belum ada data.',
+                    tindakDef: defaultTindak.sulit
+                }
+            ];
+
+            // Render stat cards
+            if (statCards) {
+                statCards.innerHTML = `
+                    <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Rata-rata Kelas</p>
+                                <p class="text-2xl font-extrabold text-indigo-700 mt-1">${allScores.length? rataKelas.toFixed(1) : '-'}</p>
+                                <p class="text-xs text-gray-500 mt-1">${allScores.length? allScores.length+' nilai tercatat' : 'Belum ada nilai'}</p>
+                            </div>
+                            <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600"><i class="fas fa-chart-bar text-xl"></i></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Ketuntasan KKTP ≥ ${kktpMin}</p>
+                                <p class="text-2xl font-extrabold ${belumTuntasSiswa>0?'text-amber-600':'text-emerald-600'} mt-1">${totalSiswa? tuntasSiswa+'/'+totalSiswa : '-'}</p>
+                                <p class="text-xs text-gray-500 mt-1">${totalSiswa? (tuntasSiswa/totalSiswa*100).toFixed(1)+'% tuntas' : 'Belum ada siswa'}</p>
+                            </div>
+                            <div class="w-12 h-12 ${belumTuntasSiswa>0?'bg-amber-50 text-amber-600':'bg-emerald-50 text-emerald-600'} rounded-full flex items-center justify-center"><i class="fas fa-check-circle text-xl"></i></div>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wide">Materi Tersulit</p>
+                                <p class="text-sm font-bold text-gray-800 mt-1 line-clamp-2">${materiTersulit? escapeHtml(materiTersulit.nama) : 'Belum terdeteksi'}</p>
+                                <p class="text-xs text-gray-500 mt-1">${materiTersulit? 'Rata '+materiTersulit.avg.toFixed(1) : ''}</p>
+                            </div>
+                            <div class="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center text-rose-600"><i class="fas fa-exclamation-triangle text-xl"></i></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Render main table
+            let html = '';
+            if (!filteredAsesmen.length) {
+                html = `<tr><td colspan="4" class="border border-gray-600 p-4 text-center text-gray-400">Belum ada asesmen pada filter ${escapeHtml(identitas.mapel||'-')} - ${escapeHtml(identitas.kelas||'-')}. Silakan buat rencana asesmen terlebih dahulu.</td></tr>`;
+            } else if (!allScores.length) {
+                // tetap tampilkan struktur tapi hasil data kosong
+                rows.forEach(r => {
+                    const saved = getSaved(r.key);
+                    const catatanVal = saved.catatan || r.catatanDef;
+                    const tindakVal = saved.tindak || r.tindakDef;
+                    html += `
+                        <tr>
+                            <td class="border border-gray-600 p-3 font-bold bg-gray-50 align-top">${escapeHtml(r.param)}</td>
+                            <td class="border border-gray-600 p-3 align-top font-semibold">${escapeHtml(r.hasil)}</td>
+                            <td class="border border-gray-600 p-2 align-top">
+                                <textarea data-param="${r.key}" data-field="catatan" oninput="saveAnalisisKetercapaian(this)" class="w-full min-h-[60px] border border-gray-300 rounded p-2 text-[12px] focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none" placeholder="${escapeHtml(r.catatanDef)}">${escapeHtml(catatanVal)}</textarea>
+                            </td>
+                            <td class="border border-gray-600 p-2 align-top">
+                                <textarea data-param="${r.key}" data-field="tindak" oninput="saveAnalisisKetercapaian(this)" class="w-full min-h-[60px] border border-gray-300 rounded p-2 text-[12px] focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none" placeholder="${escapeHtml(r.tindakDef)}">${escapeHtml(tindakVal)}</textarea>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                rows.forEach(r => {
+                    const saved = getSaved(r.key);
+                    const catatanVal = saved.catatan || r.catatanDef;
+                    const tindakVal = saved.tindak || r.tindakDef;
+                    html += `
+                        <tr>
+                            <td class="border border-gray-600 p-3 font-bold bg-indigo-50/50 align-top">${escapeHtml(r.param)}</td>
+                            <td class="border border-gray-600 p-3 align-top">
+                                <div class="font-extrabold text-indigo-700 text-[15px]">${escapeHtml(r.hasil)}</div>
+                                <div class="text-[11px] text-gray-500 mt-1">${r.key==='rata'? (rataKelas>=kktpMin?'Di atas KKTP':'Di bawah KKTP') : r.key==='tuntas'? (belumTuntasSiswa? belumTuntasSiswa+' perlu remedial' : 'Tuntas semua') : ''}</div>
+                            </td>
+                            <td class="border border-gray-600 p-2 align-top">
+                                <textarea data-param="${r.key}" data-field="catatan" oninput="saveAnalisisKetercapaian(this)" class="w-full min-h-[60px] border border-gray-300 rounded p-2 text-[12px] focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none">${escapeHtml(catatanVal)}</textarea>
+                                <div class="text-[10px] text-gray-400 mt-1 no-print">Otomatis tersimpan</div>
+                            </td>
+                            <td class="border border-gray-600 p-2 align-top">
+                                <textarea data-param="${r.key}" data-field="tindak" oninput="saveAnalisisKetercapaian(this)" class="w-full min-h-[60px] border border-gray-300 rounded p-2 text-[12px] focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none">${escapeHtml(tindakVal)}</textarea>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            tbody.innerHTML = html;
+
+            // Render rincian per asesmen
+            if (rincianTbody) {
+                if (!filteredAsesmen.length) {
+                    rincianTbody.innerHTML = `<tr><td colspan="9" class="border border-gray-400 p-3 text-center text-gray-400">Belum ada data</td></tr>`;
+                } else {
+                    let rHtml = '';
+                    perAsesmenStats.forEach((st, idx) => {
+                        const status = isNaN(st.avg) ? '<span class="text-gray-400">Belum ada nilai</span>' : st.avg >= kktpMin ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">TUNTAS</span>' : '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">PERLU PERBAIKAN</span>';
+                        rHtml += `
+                            <tr class="${idx%2===0?'bg-white':'bg-gray-50'}">
+                                <td class="border border-gray-400 p-2 text-center">${idx+1}</td>
+                                <td class="border border-gray-400 p-2 font-medium">${escapeHtml(st.nama)}<div class="text-[10px] text-gray-500 italic">${escapeHtml((st.tp||'').substring(0,60))}</div></td>
+                                <td class="border border-gray-400 p-2 text-center text-[10px]">${escapeHtml(st.tanggal||'-')}</td>
+                                <td class="border border-gray-400 p-2 text-center font-bold ${!isNaN(st.avg) && st.avg<kktpMin?'text-rose-600':''}">${isNaN(st.avg)?'-':st.avg.toFixed(1)}</td>
+                                <td class="border border-gray-400 p-2 text-center">${isNaN(st.max)?'-':st.max}</td>
+                                <td class="border border-gray-400 p-2 text-center">${isNaN(st.min)?'-':st.min}</td>
+                                <td class="border border-gray-400 p-2 text-center">${st.tuntas}/${st.total}</td>
+                                <td class="border border-gray-400 p-2 text-center">${st.total? st.pct.toFixed(0)+'%' : '-'}</td>
+                                <td class="border border-gray-400 p-2">${status}</td>
+                            </tr>
+                        `;
+                    });
+                    rincianTbody.innerHTML = rHtml;
+                }
+            }
+        }
+
+        function saveAnalisisKetercapaian(el) {
+            const param = el.getAttribute('data-param');
+            const field = el.getAttribute('data-field'); // catatan / tindak
+            const ctxKey = getAnalisisContextKey();
+            const storageKey = `${ctxKey}|${param}`;
+            if (!dataAnalisisKetercapaian[storageKey]) dataAnalisisKetercapaian[storageKey] = { catatan: '', tindak: '' };
+            if (field === 'catatan') dataAnalisisKetercapaian[storageKey].catatan = el.value;
+            else if (field === 'tindak') dataAnalisisKetercapaian[storageKey].tindak = el.value;
+            saveDataLocally();
+        }
+
+        function switchAnalisisSubTab(sub) {
+            _activeAnalisisSubTab = sub;
+            const kelasView = document.getElementById('analisis-sub-kelas-view');
+            const perSiswaView = document.getElementById('analisis-sub-persiswa-view');
+            const btnKelas = document.getElementById('btn-analisis-sub-kelas');
+            const btnPerSiswa = document.getElementById('btn-analisis-sub-persiswa');
+            if (sub === 'kelas') {
+                if (kelasView) kelasView.classList.remove('hidden');
+                if (perSiswaView) perSiswaView.classList.add('hidden');
+                if (btnKelas) btnKelas.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 text-white transition-colors';
+                if (btnPerSiswa) btnPerSiswa.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 hover:bg-gray-50 transition-colors';
+            } else {
+                if (kelasView) kelasView.classList.add('hidden');
+                if (perSiswaView) perSiswaView.classList.remove('hidden');
+                if (btnKelas) btnKelas.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-white text-gray-600 hover:bg-gray-50 transition-colors';
+                if (btnPerSiswa) btnPerSiswa.className = 'px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 text-white transition-colors';
+                renderAnalisisPerSiswa();
+            }
+        }
+
+        function printActiveAnalisis() {
+            if (_activeAnalisisSubTab === 'perSiswa') {
+                printArea('print-analisis-persiswa');
+            } else {
+                printArea('print-analisis-ketercapaian');
+            }
+        }
+
+        function changeAnalisisPerSiswa(siswaId) {
+            _selectedAnalisisSiswaId = siswaId;
+            renderAnalisisPerSiswa();
+        }
+
+        function saveAnalisisPerSiswa() {
+            const ctxKey = getAnalisisContextKey();
+            const siswaId = _selectedAnalisisSiswaId;
+            if (!siswaId) return;
+            const key = `${ctxKey}|SISWA|${siswaId}`;
+            const catatanEl = document.getElementById('analisis-persiswa-catatan');
+            const tindakEl = document.getElementById('analisis-persiswa-tindak');
+            if (!dataAnalisisPerSiswa[key]) dataAnalisisPerSiswa[key] = { catatan: '', tindak: '' };
+            if (catatanEl) dataAnalisisPerSiswa[key].catatan = catatanEl.value;
+            if (tindakEl) dataAnalisisPerSiswa[key].tindak = tindakEl.value;
+            saveDataLocally();
+        }
+
+        function renderAnalisisPerSiswa() {
+            const selectEl = document.getElementById('analisis-persiswa-select');
+            const searchEl = document.getElementById('analisis-persiswa-search');
+            const summaryTbody = document.getElementById('analisis-persiswa-summary-tbody');
+            const statCards = document.getElementById('analisis-persiswa-stat-cards');
+            const detailContainer = document.getElementById('analisis-persiswa-detail-container');
+            const ringkasanContainer = document.getElementById('analisis-persiswa-ringkasan-container');
+            const printKktpEls = document.querySelectorAll('.print-analisis-kktp-persiswa');
+            if (!summaryTbody) return;
+
+            const kktpMin = getAnalisisKktpMin();
+            printKktpEls.forEach(el => el.textContent = kktpMin);
+
+            let filteredAsesmen = dataAsesmen.filter(d =>
+                (d.tapel === identitas.tapel) &&
+                (d.semester === identitas.semester) &&
+                (d.mapel === identitas.mapel) &&
+                (d.kelas === identitas.kelas)
+            );
+            try { filteredAsesmen = applyGuruAccessFilter(filteredAsesmen); } catch(e){}
+
+            let students = masterData.siswa.filter(s => s.kelas === identitas.kelas);
+            if (identitas.tapel) students = students.filter(s => !s.tapel || s.tapel === identitas.tapel);
+            students.sort((a,b) => a.nama.localeCompare(b.nama));
+
+            // Populate select
+            if (selectEl) {
+                const currentVal = _selectedAnalisisSiswaId || '';
+                let html = `<option value="">-- Semua Siswa (Ringkasan) --</option>`;
+                students.forEach(s => {
+                    const sel = s.id === currentVal ? 'selected' : '';
+                    html += `<option value="${escapeHtml(s.id)}" ${sel}>${escapeHtml(s.nama)}</option>`;
+                });
+                selectEl.innerHTML = html;
+            }
+
+            const searchTerm = searchEl ? searchEl.value.toLowerCase().trim() : '';
+            let displayStudents = students;
+            if (searchTerm) {
+                displayStudents = students.filter(s => s.nama.toLowerCase().includes(searchTerm));
+            }
+
+            // Hitung per siswa
+            let perSiswaData = displayStudents.map(s => {
+                let total = 0, count = 0, max = -Infinity, min = Infinity;
+                let tuntasCount = 0;
+                let nilaiPerAsesmen = [];
+                let terendah = null, tertinggi = null;
+
+                filteredAsesmen.forEach(asm => {
+                    const key = `${asm.id}_${s.id}`;
+                    const saved = dataNilai[key];
+                    let val = NaN;
+                    if (saved && saved.nilai !== '' && saved.nilai != null) {
+                        val = parseFloat(saved.nilai);
+                    }
+                    nilaiPerAsesmen.push({ asesmen: asm, nilai: val });
+                    if (!isNaN(val)) {
+                        total += val;
+                        count++;
+                        if (val > max) max = val;
+                        if (val < min) min = val;
+                        if (val >= kktpMin) tuntasCount++;
+                        if (!terendah || val < terendah.nilai) terendah = { nama: asm.nama, nilai: val, tp: asm.tp };
+                        if (!tertinggi || val > tertinggi.nilai) tertinggi = { nama: asm.nama, nilai: val, tp: asm.tp };
+                    }
+                });
+
+                const avg = count ? total / count : NaN;
+                const pct = count ? (tuntasCount / count * 100) : 0;
+
+                return {
+                    siswa: s,
+                    avg, max: max===-Infinity? NaN : max, min: min===Infinity? NaN : min,
+                    count, tuntasCount, totalAsesmen: filteredAsesmen.length,
+                    pct, terendah, tertinggi, nilaiPerAsesmen
+                };
+            });
+
+            // Jika ada siswa terpilih, tampilkan detail, sembunyikan ringkasan? Kita tampilkan keduanya tapi detail di bawah
+            const selectedId = _selectedAnalisisSiswaId;
+            const selectedData = perSiswaData.find(d => d.siswa.id === selectedId);
+
+            // Stat cards untuk per siswa view
+            if (statCards) {
+                if (selectedData) {
+                    const statusText = isNaN(selectedData.avg) ? 'Belum ada nilai' : selectedData.avg >= kktpMin ? 'Tuntas' : 'Belum Tuntas';
+                    const statusColor = isNaN(selectedData.avg) ? 'text-gray-500' : selectedData.avg >= kktpMin ? 'text-emerald-600' : 'text-rose-600';
+                    statCards.innerHTML = `
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Siswa Terpilih</p>
+                            <p class="text-sm font-bold text-gray-800 mt-1">${escapeHtml(selectedData.siswa.nama)}</p>
+                            <p class="text-[11px] text-gray-500 mt-1">${selectedData.count} nilai dari ${selectedData.totalAsesmen} asesmen</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Rata-rata</p>
+                            <p class="text-xl font-extrabold text-indigo-700 mt-1">${isNaN(selectedData.avg)?'-':selectedData.avg.toFixed(1)}</p>
+                            <p class="text-[11px] font-bold ${statusColor} mt-1">${statusText} (KKTP ${kktpMin})</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Materi Terkuat</p>
+                            <p class="text-xs font-bold text-emerald-700 mt-1">${selectedData.tertinggi ? escapeHtml(selectedData.tertinggi.nama)+' ('+selectedData.tertinggi.nilai+')' : '-'}</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Perlu Perbaikan</p>
+                            <p class="text-xs font-bold text-rose-700 mt-1">${selectedData.terendah ? escapeHtml(selectedData.terendah.nama)+' ('+selectedData.terendah.nilai+')' : '-'}</p>
+                        </div>
+                    `;
+                } else {
+                    // overall stats
+                    const totalSiswa = perSiswaData.length;
+                    const adaNilai = perSiswaData.filter(d=>!isNaN(d.avg));
+                    const avgKelas = adaNilai.length ? (adaNilai.reduce((a,b)=>a+b.avg,0)/adaNilai.length) : NaN;
+                    const tuntasKelas = perSiswaData.filter(d=>!isNaN(d.avg) && d.avg>=kktpMin).length;
+                    statCards.innerHTML = `
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Total Siswa</p>
+                            <p class="text-xl font-extrabold text-gray-800 mt-1">${totalSiswa}</p>
+                            <p class="text-[11px] text-gray-500 mt-1">Filter kelas ${escapeHtml(identitas.kelas||'-')}</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Rata-rata Kelas</p>
+                            <p class="text-xl font-extrabold text-indigo-700 mt-1">${isNaN(avgKelas)?'-':avgKelas.toFixed(1)}</p>
+                            <p class="text-[11px] text-gray-500 mt-1">${adaNilai.length} siswa ada nilai</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Tuntas</p>
+                            <p class="text-xl font-extrabold text-emerald-600 mt-1">${tuntasKelas}/${totalSiswa}</p>
+                            <p class="text-[11px] text-gray-500 mt-1">${totalSiswa? (tuntasKelas/totalSiswa*100).toFixed(0)+'%':''} tuntas</p>
+                        </div>
+                        <div class="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase">Belum Tuntas</p>
+                            <p class="text-xl font-extrabold text-rose-600 mt-1">${totalSiswa - tuntasKelas}</p>
+                            <p class="text-[11px] text-gray-500 mt-1">Perlu remedial</p>
+                        </div>
+                    `;
+                }
+            }
+
+            // Render ringkasan tabel
+            let html = '';
+            if (!students.length) {
+                html = `<tr><td colspan="10" class="border border-gray-400 p-4 text-center text-gray-400">Belum ada data siswa untuk kelas ${escapeHtml(identitas.kelas||'-')}. Tambahkan di Data Master.</td></tr>`;
+            } else if (!perSiswaData.length) {
+                html = `<tr><td colspan="10" class="border border-gray-400 p-4 text-center text-gray-400">Tidak ada siswa sesuai pencarian "${escapeHtml(searchTerm)}"</td></tr>`;
+            } else {
+                perSiswaData.forEach((d, idx) => {
+                    const status = isNaN(d.avg) ? '<span class="text-gray-400">Belum dinilai</span>' : d.avg >= kktpMin ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">TUNTAS</span>' : '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">REMEDIAL</span>';
+                    const rowClass = d.siswa.id === selectedId ? 'bg-indigo-50' : (idx%2===0?'bg-white':'bg-gray-50');
+                    html += `
+                        <tr class="${rowClass} hover:bg-indigo-50 cursor-pointer" onclick="changeAnalisisPerSiswa('${escapeHtml(d.siswa.id)}')">
+                            <td class="border border-gray-400 p-2 text-center">${idx+1}</td>
+                            <td class="border border-gray-400 p-2 font-medium">${escapeHtml(d.siswa.nama)}</td>
+                            <td class="border border-gray-400 p-2 text-center font-bold ${!isNaN(d.avg) && d.avg<kktpMin?'text-rose-600':''}">${isNaN(d.avg)?'-':d.avg.toFixed(1)}</td>
+                            <td class="border border-gray-400 p-2 text-center">${isNaN(d.max)?'-':d.max}</td>
+                            <td class="border border-gray-400 p-2 text-center">${isNaN(d.min)?'-':d.min}</td>
+                            <td class="border border-gray-400 p-2 text-center">${d.count}/${d.totalAsesmen}</td>
+                            <td class="border border-gray-400 p-2 text-center">${d.tuntasCount}/${d.count}</td>
+                            <td class="border border-gray-400 p-2 text-center">${d.count? d.pct.toFixed(0)+'%':'-'}</td>
+                            <td class="border border-gray-400 p-2 text-[10px]">${d.terendah ? escapeHtml(d.terendah.nama)+' ('+d.terendah.nilai+')' : '-'}</td>
+                            <td class="border border-gray-400 p-2 text-center">${status}</td>
+                        </tr>
+                    `;
+                });
+            }
+            summaryTbody.innerHTML = html;
+
+            // Render detail jika ada siswa terpilih
+            if (selectedData && detailContainer) {
+                detailContainer.classList.remove('hidden');
+                document.getElementById('analisis-persiswa-detail-nama').textContent = selectedData.siswa.nama;
+                document.getElementById('detail-persiswa-rata').textContent = isNaN(selectedData.avg) ? '-' : selectedData.avg.toFixed(1);
+                document.getElementById('detail-persiswa-status').textContent = isNaN(selectedData.avg) ? 'Belum ada nilai' : (selectedData.avg >= kktpMin ? `Tuntas (≥ ${kktpMin})` : `Belum Tuntas (< ${kktpMin})`);
+                document.getElementById('detail-persiswa-kuat').textContent = selectedData.tertinggi ? `${selectedData.tertinggi.nama} (${selectedData.tertinggi.nilai})` : '-';
+                document.getElementById('detail-persiswa-lemah').textContent = selectedData.terendah ? `${selectedData.terendah.nama} (${selectedData.terendah.nilai})` : '-';
+
+                const detailTbody = document.getElementById('analisis-persiswa-detail-tbody');
+                let dHtml = '';
+                selectedData.nilaiPerAsesmen.forEach((item, i) => {
+                    const val = item.nilai;
+                    const status = isNaN(val) ? '<span class="text-gray-400">-</span>' : val >= kktpMin ? '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[10px] font-bold">TUNTAS</span>' : '<span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded text-[10px] font-bold">REMEDIAL</span>';
+                    dHtml += `
+                        <tr class="${i%2===0?'bg-white':'bg-gray-50'}">
+                            <td class="border border-gray-400 p-2 text-center">${i+1}</td>
+                            <td class="border border-gray-400 p-2">${escapeHtml(item.asesmen.nama)}<div class="text-[10px] text-gray-500 italic">${escapeHtml((item.asesmen.tp||'').substring(0,60))}</div></td>
+                            <td class="border border-gray-400 p-2 text-center text-[10px]">${escapeHtml(item.asesmen.jenis||'-')}</td>
+                            <td class="border border-gray-400 p-2 text-center font-bold ${!isNaN(val) && val<kktpMin?'text-rose-600':''}">${isNaN(val)?'-':val}</td>
+                            <td class="border border-gray-400 p-2 text-center">${kktpMin}</td>
+                            <td class="border border-gray-400 p-2 text-center">${status}</td>
+                            <td class="border border-gray-400 p-2 text-[10px]">${!isNaN(val) && val<kktpMin ? 'Perlu bimbingan' : (!isNaN(val) ? 'Dikuasai' : 'Belum dinilai')}</td>
+                        </tr>
+                    `;
+                });
+                detailTbody.innerHTML = dHtml || `<tr><td colspan="7" class="border border-gray-400 p-3 text-center text-gray-400">Belum ada asesmen</td></tr>`;
+
+                // Load catatan per siswa
+                const ctxKey = getAnalisisContextKey();
+                const key = `${ctxKey}|SISWA|${selectedData.siswa.id}`;
+                const saved = dataAnalisisPerSiswa[key] || { catatan: '', tindak: '' };
+                const catatanEl = document.getElementById('analisis-persiswa-catatan');
+                const tindakEl = document.getElementById('analisis-persiswa-tindak');
+                if (catatanEl) catatanEl.value = saved.catatan || '';
+                if (tindakEl) tindakEl.value = saved.tindak || '';
+            } else if (detailContainer) {
+                detailContainer.classList.add('hidden');
+            }
+        }
+
+        // Override renderAsesmenAnalisis to also render per siswa when needed
+        const _originalRenderAsesmenAnalisis = renderAsesmenAnalisis;
+        renderAsesmenAnalisis = function() {
+            _originalRenderAsesmenAnalisis();
+            // Jika sub tab per siswa aktif, render juga
+            if (_activeAnalisisSubTab === 'perSiswa') {
+                renderAnalisisPerSiswa();
+            } else {
+                // tetap siapkan data untuk dropdown per siswa agar tidak kosong saat switch
+                try { renderAnalisisPerSiswa(); } catch(e){}
+                // sembunyikan detail jika belum pilih
+                const detailContainer = document.getElementById('analisis-persiswa-detail-container');
+                if (detailContainer && !_selectedAnalisisSiswaId) detailContainer.classList.add('hidden');
+            }
         }
 
         // ======================= JADWAL PELAJARAN =======================
@@ -33343,5 +34335,5 @@ const REFERENSI_MODUL_DL_LENGKAP = [{"bab_id": 1, "bab_judul": "BAB 1 : HUBUNGAN
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1cced05add8e8df',t:'MTc4NDMyOTg4Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a244f7ddad0dfcf8',t:'MTc4NTU4ODYyMg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a245e0493a20cdd1',t:'MTc4NTU5ODE0Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a24adefddb4070ac',t:'MTc4NTY1MDUxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a255398f3c5ea2a7',t:'MTc4NTc1OTA4NQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a255c1703d3e9e4a',t:'MTc4NTc2NDY1MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a25bbfda9ab6ea7d',t:'MTc4NTgyNzUwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a26960391b5dea81',t:'MTc4NTk3MDM4NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f"}' crossorigin="anonymous"></script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29f97551ca7577a',t:'MTc4NjUzODg3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a29f97551ca7577a',t:'MTc4NjUzODg3Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3b3ed784d8d8093',t:'MTc4OTQzNjQ3MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
